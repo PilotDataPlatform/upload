@@ -111,14 +111,13 @@ jobs:
         path: .venv
         key: venv-${{ hashFiles('**/poetry.lock') }}
 
-    - name: Install dependencies
-      run: poetry install
-      
     - name: Run tests
       env:
         # The hostname used to communicate with the Redis service container
         REDIS_HOST: localhost
         # The default Redis port
         REDIS_PORT: 6379
-      run: CONFIG_CENTER_ENABLED=False poetry run python -m pytest tests/
+      run: |
+        source .venv/bin/activate
+        CONFIG_CENTER_ENABLED=False poetry run python -m pytest tests/
       
