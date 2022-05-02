@@ -46,6 +46,8 @@ jobs:
         with:
           path: .venv
           key: venv-${{ hashFiles('**/poetry.lock') }}
+          restore-keys: |
+            poetry-${{ hashFiles('**/poetry.lock') }}
       #----------------------------------------------
       # install dependencies if cache does not exist
       #----------------------------------------------
@@ -101,23 +103,33 @@ jobs:
           # Maps port 6379 on service container to the host
           - 6379:6379
     steps:
-    - uses: actions/checkout@v1
-    - uses: actions/setup-python@v2
-      with:
-        python-version: 3.9
-    - uses: actions/cache@v2
-      id: cached-poetry-dependencies
-      with:
-        path: .venv
-        key: venv-${{ hashFiles('**/poetry.lock') }}
+      - uses: actions/checkout@v3
 
-    - name: Run tests
-      env:
-        # The hostname used to communicate with the Redis service container
-        REDIS_HOST: localhost
-        # The default Redis port
-        REDIS_PORT: 6379
-      run: |
-        source .venv/bin/activate
-        CONFIG_CENTER_ENABLED=False poetry run python -m pytest tests/
+      - name: Init Python 3.9
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+      - name: Install ldap
+        run: sudo apt install libldap2-dev libsasl2-dev slapd ldap-utils
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+      - name: Cache Poetry virtualenv
+        uses: actions/cache@v1
+        id: cache
+        with:
+          path: .venv
+          key: poetry-${{ hashFiles('**/poetry.lock') }}
+          restore-keys: |
+            poetry-${{ hashFiles('**/poetry.lock') }}
+      - name: Install dependencies
+        run: poetry install
+
+      - name: Run tests
+        env:
+          # The hostname used to communicate with the Redis service container
+          REDIS_HOST: localhost
+          # The default Redis port
+          REDIS_PORT: 6379
+        run: |
+          CONFIG_CENTER_ENABLED=False poetry run python -m pytest tests/
       
