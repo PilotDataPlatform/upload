@@ -17,7 +17,7 @@ import enum
 from functools import wraps
 
 from fastapi import HTTPException
-from logger import LoggerFactory
+from common import LoggerFactory
 
 from app.models.base_models import APIResponse, EAPIResponseCode
 from app.resources.decorator import HeaderMissingException

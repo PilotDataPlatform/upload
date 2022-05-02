@@ -20,11 +20,10 @@ import unicodedata as ud
 from typing import Optional
 
 import httpx
-from common import GEIDClient
+from common import GEIDClient, LoggerFactory
 from fastapi import APIRouter, BackgroundTasks, File, Form, Header, UploadFile
 from fastapi.concurrency import run_in_threadpool
 from fastapi_utils import cbv
-from logger import LoggerFactory
 
 from app.commons.data_providers import SrvAioRedisSingleton, session_job_get_status
 from app.commons.data_providers.redis_project_session_job import (

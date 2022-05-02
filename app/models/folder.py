@@ -18,7 +18,7 @@ import time
 import uuid
 
 import httpx
-from logger import LoggerFactory
+from common import LoggerFactory
 
 from app.config import ConfigClass
 
