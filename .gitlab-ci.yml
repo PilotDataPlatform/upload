@@ -1,0 +1,28 @@
+image: python:3.8-buster
+
+variables:
+  PIP_USERNAME: $PIP_USERNAME
+  PIP_PASSWORD: $PIP_PASSWORD
+
+before_script:
+  - export PATH=$PATH:/root/.local/bin
+  - pip install -U pip
+  - pip3 install pre_commit
+  - python3 -m pre_commit install
+
+stages:
+  - Static Analysis
+
+flake8:
+  stage: Static Analysis
+  tags:
+    - indoc
+  script:
+    - python3 -m pre_commit run flake8 --all-files
+
+isort:
+  stage: Static Analysis
+  tags:
+    - indoc
+  script:
+    - python3 -m pre_commit run isort --all-files

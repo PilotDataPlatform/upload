@@ -1,0 +1,53 @@
+[tool.poetry]
+name = "service_upload"
+version = "0.2.3"
+description = ""
+authors = []
+
+[tool.poetry.dependencies]
+python = "^3.7"
+logger = "0.1.0"
+fastapi = "0.62.0"
+fastapi-utils = "0.2.1"
+uvicorn = "0.12.3"
+gunicorn = "20.0.4"
+uvloop = "0.14.0"
+httptools = "0.1.1"
+PyJWT = "1.4.2"
+python-multipart = "0.0.5"
+python-json-logger = "0.1.11"
+minio = "7.0.3"
+xmltodict = "0.12.0"
+python-dotenv = "0.19.1"
+pydantic = "1.8.2"
+opentelemetry-instrumentation-fastapi = "^0.27b0"
+opentelemetry-instrumentation-httpx = "^0.27b0"
+opentelemetry-sdk = "^1.8.0"
+opentelemetry-exporter-jaeger = "^1.8.0"
+opentelemetry-instrumentation-asyncpg = "^0.27b0"
+opentelemetry-instrumentation = "^0.27b0"
+asyncpg = "0.25.0"
+httpx = "^0.21.3"
+aioredis = "^2.0.1"
+common = "^0.0.19"
+py2neo = "^2021.2.3"
+aiofiles = "^0.8.0"
+pytest-mock = "^3.7.0"
+
+[tool.poetry.dev-dependencies]
+pytest = "6.2.5"
+pytest-env = "0.6.2"
+flake8 = "^4.0.1"
+pytest-cov = "^3.0.0"
+pytest-httpx = "^0.17.3"
+pytest-asyncio = "^0.17.2"
+async-asgi-testclient = "^1.4.9"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[[tool.poetry.source]]
+name = "pilot"
+url = "https://git.indocresearch.org/api/v4/groups/pilot/-/packages/pypi/simple"
+default = true

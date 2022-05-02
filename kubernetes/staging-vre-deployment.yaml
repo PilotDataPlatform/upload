@@ -1,0 +1,110 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: upload
+  namespace: vre
+  labels:
+    app: upload
+  annotations:
+    "sidecar.jaegertracing.io/inject": "true"
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: upload
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 33%
+  template:
+    metadata:
+      labels:
+        app: upload
+    spec:
+      containers:
+        - name: upload
+          image: registry-gitlab.indocresearch.org/charite/service_upload:<VERSION>
+          ports:
+            - containerPort: 5079
+          env:
+            - name: env
+              value: "staging"
+            - name: namespace
+              value: "vre"
+            - name: CONFIG_CENTER_ENABLED
+              value: "true"
+            - name: VAULT_URL
+              value: "https://vault.vault:8200/v1/vre/app/config"
+            - name: VAULT_CRT
+              value: "/run/secrets/kubernetes.io/serviceaccount/ca.crt"
+            - name: VAULT_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: vault-secret
+                  key: token
+            - name: ROOT_PATH
+              value: "/vre-data"
+            - name: CORE_ZONE_LABEL
+              value: "Core"
+            - name: GREEN_ZONE_LABEL
+              value: "Greenroom"
+            - name: NEO4J_SERVICE
+              value: "http://neo4j.utility:5062"
+            - name: ENTITYINFO_SERVICE
+              value: "http://entityinfo.utility:5066"
+            - name: QUEUE_SERVICE
+              value: "http://queue-producer.greenroom:6060"
+            - name: DATA_OPS_UTIL
+              value: "http://dataops-ut.utility:5063"
+            - name: PROVENANCE_SERVICE
+              value: "http://provenance.utility:5077"
+            - name: MINIO_OPENID_CLIENT
+              value: "react-app"
+            - name: MINIO_ENDPOINT
+              value: "minio.minio:9000"
+            - name: MINIO_HTTPS
+              value: "False"
+            - name: KEYCLOAK_URL
+              value: "http://keycloak.utility:8080/vre/auth/realms/vre/protocol/openid-connect/token"
+            - name: DOWNLOAD_TOKEN_EXPIRE_AT
+              value: "5"
+            - name: REDIS_HOST
+              value: "redis-master.utility"
+            - name: REDIS_PORT
+              value: "6379"
+            - name: REDIS_DB
+              value: "0"
+            - name: OPEN_TELEMETRY_ENABLED
+              value: "True"
+            - name: OPEN_TELEMETRY_HOST
+              value: "127.0.0.1"
+            - name: OPEN_TELEMETRY_PORT
+              value: "6831"
+            - name: DCM_PIPELINE_ID
+              value: "generate_id"
+          volumeMounts:
+            - name: nfsvol-vre-data
+              mountPath: /vre-data
+      nodeSelector:
+        namespace: vre
+      volumes:
+        - name: nfsvol-vre-data
+          persistentVolumeClaim:
+            claimName: vre-data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: upload
+  namespace: vre
+  labels:
+    app: upload
+spec:
+  ports:
+    - name: http
+      port: 5079
+      targetPort: 5079
+  selector:
+    app: upload
+  type: ClusterIP
