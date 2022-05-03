@@ -31,9 +31,7 @@ The upload service is one of the component for PILOT project. The main responsib
  pip install poetry
  ```
 
- 2. create the `.env` file from `.env.schema`
-
- 3. add the precommit packaget:
+ 2. add the precommit package:
 
  ```
  pip3 install pre_commit
@@ -43,7 +41,7 @@ The upload service is one of the component for PILOT project. The main responsib
 
  1. git clone the project:
  ```
- git clone https://github.com/PilotDataPlatform/upload.git
+ git clone https://github.com/PilotDataPlatform/download.git
  ```
 
  2. install the package:
@@ -51,7 +49,9 @@ The upload service is one of the component for PILOT project. The main responsib
  poetry install
  ```
 
- 3. run it locally:
+ 3. create the `.env` file from `.env.schema`
+
+ 4. run it locally:
  ```
  poetry run python run.py
  ```
