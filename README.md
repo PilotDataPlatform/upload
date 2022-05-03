@@ -61,7 +61,7 @@ The upload service is one of the component for PILOT project. The main responsib
 To package up the service into docker pod, running following command:
 
 ```
-docker build --build-arg pip_username=<pip_username> --build-arg pip_password=<pip_password>
+docker build .
 ```
 
 ## API Documents
