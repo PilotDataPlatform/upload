@@ -1,7 +1,7 @@
 pipeline {
     agent { label 'small' }
     environment {
-      imagenameDEV = "ghcr.io/pilotdataplatform/upload/dev"  
+      imagenameDEV = "ghcr.io/pilotdataplatform/upload-dev"  
       imagename = "ghcr.io/pilotdataplatform/upload"
       commit = sh(returnStdout: true, script: 'git describe --always').trim()
       registryCredential = 'pilot-ghcr'
