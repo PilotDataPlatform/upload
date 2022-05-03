@@ -1,7 +1,8 @@
 # Upload Service
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg?style=for-the-badge)](https://www.gnu.org/licenses/agpl-3.0)
 [![Python 3.7](https://img.shields.io/badge/python-3.7-green?style=for-the-badge)](https://www.python.org/)
-
+[![GitHub Workflow Status (branch)](https://img.shields.io/github/workflow/status/pilotdataplatform/dataset/ci/main?style=for-the-badge)](https://github.com/PilotDataPlatform/upload/actions/workflows/cicd.yml)
+[![codecov](https://img.shields.io/codecov/c/github/PilotDataPlatform/dataset?style=for-the-badge)](https://codecov.io/gh/PilotDataPlatform/upload)
 
 This service is built for file data uploading purpose. It's built using the FastAPI python framework.
 
@@ -17,7 +18,7 @@ The upload service is one of the component for PILOT project. The main responsib
 
  - [poetry](https://python-poetry.org/): python package management
 
- - [docker](https://docker.com):
+ - [docker](https://docker.com)
 
 # Getting Started
 
@@ -26,27 +27,33 @@ The upload service is one of the component for PILOT project. The main responsib
 
  1. The project is using poetry to handle the package. **Note here the poetry must install globally not in the anaconda virtual environment**
 
-```
-pip install poetry
-```
+ ```
+ pip install poetry
+ ```
 
  2. create the `.env` file from `.env.schema`
+
+ 3. add the precommit packaget:
+
+ ```
+ pip3 install pre_commit
+ ```
 
 ## Installation
 
  1. git clone the project:
  ```
-git clone https://github.com/PilotDataPlatform/upload.git
+ git clone https://github.com/PilotDataPlatform/upload.git
  ```
 
  2. install the package:
  ```
-poetry install
+ poetry install
  ```
 
  3. run it locally:
  ```
-poetry run python run.py
+ poetry run python run.py
  ```
 
 ## Docker
