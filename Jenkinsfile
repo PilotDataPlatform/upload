@@ -1,7 +1,6 @@
 pipeline {
     agent { label 'small' }
     environment {
-      imagenameDEV = "ghcr.io/pilotdataplatform/upload-dev"  
       imagename = "ghcr.io/pilotdataplatform/upload"
       commit = sh(returnStdout: true, script: 'git describe --always').trim()
       registryCredential = 'pilot-ghcr'
@@ -45,7 +44,7 @@ pipeline {
       steps {
         script {
           docker.withRegistry('https://ghcr.io', registryCredential) {
-              customImage = docker.build("$imagenameDEV:$commit")
+              customImage = docker.build("$imagename:$commit")
               customImage.push()
           }
         }
@@ -55,7 +54,7 @@ pipeline {
     stage('DEV remove image') {
       when {branch "develop"}
       steps{
-        sh "docker rmi $imagenameDEV:$commit"
+        sh "docker rmi $imagename:$commit"
       }
     }
 
