@@ -51,7 +51,7 @@ class FolderMgr:
             node_chain = []
             read_db_duration = 0
             for name_and_level in nl_pairs:
-                folder_relative_path = '/'.join(path_splitted[: name_and_level['level']])
+                folder_relative_path = '.'.join(path_splitted[: name_and_level['level']])
                 read_db_start_time = time.time()
 
                 new_node = await get_folder_node(
