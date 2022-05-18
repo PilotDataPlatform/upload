@@ -75,26 +75,3 @@ async def get_project(project_code: str) -> dict:
     result = response.json()
 
     return result[0] if len(result) > 0 else None
-
-
-async def send_to_queue(payload: dict) -> httpx.Response:
-    """
-    Summary:
-        The function call the call to queue service and
-        send upload finish message for downstream operation.
-        at current case, it will trigger the dcm_id pipeline
-    Parameters:
-        - payload(dict): the message will send to queue
-    Return:
-        - (httpx.Response) response from queue service
-    """
-    url = ConfigClass.QUEUE_SERVICE + 'send_message'
-    async with httpx.AsyncClient() as client:
-        res = await client.post(
-            url=url, json=payload,
-            headers={'Content-type': 'application/json; charset=utf-8'},
-            timeout=3600
-        )
-    # if res.status_code != 200:
-    #     raise Exception("Fail to send the message to queue: " + str(res.__dict__))
-    return res

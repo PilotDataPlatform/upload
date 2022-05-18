@@ -29,12 +29,6 @@ async def on_success_external_requests(httpx_mock):
         status_code=200,
     )
     httpx_mock.add_response(
-        method='POST',
-        url='http://queue_service/v1/send_message',
-        json={},
-        status_code=200,
-    )
-    httpx_mock.add_response(
         method='DELETE',
         url='http://data_ops_util_service/v2/resource/lock/',
         json={},
@@ -78,11 +72,10 @@ async def test_upload_zip_should_allow_zip_preview(
     create_fake_job,
     mock_minio,
     on_success_external_requests,
-    mocker
+    mocker,
 ):
-
-    class FakeLastNode():
-        global_entity_id = "fake_geid"
+    class FakeLastNode:
+        global_entity_id = 'fake_geid'
 
     mocker.patch('app.routers.v1.api_data_upload.folder_creation', return_value=FakeLastNode())
     httpx_mock.add_response(method='POST', url='http://data_ops_util_service/v1/archive', json={}, status_code=200)
@@ -124,11 +117,10 @@ async def test_upload_any_file_should_return_200(
     create_fake_job,
     mock_minio,
     on_success_external_requests,
-    mocker
+    mocker,
 ):
-
-    class FakeLastNode():
-        global_entity_id = "fake_geid"
+    class FakeLastNode:
+        global_entity_id = 'fake_geid'
 
     mocker.patch('app.routers.v1.api_data_upload.folder_creation', return_value=FakeLastNode())
 
