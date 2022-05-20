@@ -35,7 +35,6 @@ environ['GREEN_ZONE_LABEL'] = 'Greenroom'
 environ['ENTITYINFO_SERVICE'] = 'http://ENTITYINFO_SERVICE'
 environ['NEO4J_SERVICE'] = 'http://NEO4J_SERVICE'
 environ['METADATA_SERVICE'] = 'http://METADATA_SERVICE'
-environ['QUEUE_SERVICE'] = 'http://QUEUE_SERVICE'
 environ['DATA_OPS_UTIL'] = 'http://DATA_OPS_UTIL_SERVICE'
 environ['KEYCLOAK_URL'] = 'http://KEYCLOAK_URL'
 

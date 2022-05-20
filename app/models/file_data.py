@@ -36,7 +36,6 @@ class SrvFileDataMgr:
         namespace,
         project_code,
         labels,
-        dcm_id,
         minio_bucket,
         minio_object_path,
         version_id,
@@ -57,7 +56,6 @@ class SrvFileDataMgr:
             'namespace': namespace,
             'project_code': project_code,
             'labels': labels,
-            'dcm_id': dcm_id,
             'parent_folder_geid': parent_folder_geid if parent_folder_geid else '',
             # minio attribute
             'bucket': minio_bucket,
@@ -73,12 +71,8 @@ class SrvFileDataMgr:
             post_json_form['parent_query'] = from_parents
 
         async with httpx.AsyncClient() as client:
-            res = await client.post(
-                url=url,
-                json=post_json_form,
-                timeout=3600
-            )
+            res = await client.post(url=url, json=post_json_form, timeout=3600)
         self.logger.debug('SrvFileDataMgr create results: ' + res.text)
         if res.status_code != 200:
-            raise Exception("Fail to create data entity: " + str(res.__dict__))
+            raise Exception('Fail to create data entity: ' + str(res.__dict__))
         return res.json()

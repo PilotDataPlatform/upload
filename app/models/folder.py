@@ -68,7 +68,7 @@ class FolderMgr:
                     # since now we have name folder so will not directly
                     # under project node
                     if name_and_level['level'] == 0:
-                        raise Exception("Cannot create folder directly under project node")
+                        raise Exception('Cannot create folder directly under project node')
                     else:
                         parent_node = node_chain[new_node.folder_level - 1]
                         new_node.folder_parent_geid = parent_node.global_entity_id
@@ -77,13 +77,13 @@ class FolderMgr:
                     lazy_save = await new_node.lazy_save()
                     self.to_create.append(lazy_save)
 
-                read_db_duration += (time.time() - read_db_start_time)
+                read_db_duration += time.time() - read_db_start_time
 
                 node_chain.append(new_node)
                 self.last_node = new_node
                 # print()
 
-            _file_mgr_logger.warn("Read From db cost " + str(read_db_duration))
+            _file_mgr_logger.warn('Read From db cost ' + str(read_db_duration))
 
             return []
         except Exception:
@@ -129,18 +129,14 @@ class FolderNode:
     def read_from_cache(self, folder_relative_path, folder_name, project_code):
         """read created nodes in the cache."""
 
-        obj_path = os.path.join(
-            project_code,
-            folder_relative_path,
-            folder_name
-        )
+        obj_path = os.path.join(project_code, folder_relative_path, folder_name)
         found = cache.get(obj_path, None)
         if found:
-            self.global_entity_id = found.get("global_entity_id")
-            self.folder_parent_geid = found.get("folder_parent_geid")
-            self.folder_parent_name = found.get("folder_parent_name")
-            self.folder_creator = found.get("folder_creator")
-            self.project_code = found.get("project_code")
+            self.global_entity_id = found.get('global_entity_id')
+            self.folder_parent_geid = found.get('folder_parent_geid')
+            self.folder_parent_name = found.get('folder_parent_name')
+            self.folder_creator = found.get('folder_creator')
+            self.project_code = found.get('project_code')
             self.exist = True
         return self.exist
 
@@ -148,25 +144,22 @@ class FolderNode:
     # why dont we just return the self as dict
     async def lazy_save(self):
 
-        zone_mapping = {
-            "greenroom": 0
-        }.get(self.zone, 1)
+        zone_mapping = {'greenroom': 0}.get(self.zone, 1)
 
         payload = {
-            "id": self.global_entity_id,
-            "parent": self.folder_parent_geid,
-            "parent_path": self.folder_relative_path,
-            "type": "folder",
-            "zone": zone_mapping,
-            "name": self.folder_name,
-            "size": 0,
-            "owner": self.folder_creator,
-            "container_code": self.project_code,
-            "container_type": "project",
-            "location_uri": "",
-            "version": "",
-            "tags": [],
-            "dcm_id": "",
+            'id': self.global_entity_id,
+            'parent': self.folder_parent_geid,
+            'parent_path': self.folder_relative_path,
+            'type': 'folder',
+            'zone': zone_mapping,
+            'name': self.folder_name,
+            'size': 0,
+            'owner': self.folder_creator,
+            'container_code': self.project_code,
+            'container_type': 'project',
+            'location_uri': '',
+            'version': '',
+            'tags': [],
         }
 
         return payload
@@ -202,7 +195,7 @@ class FolderNode:
         node_query_url = ConfigClass.METADATA_SERVICE + 'items/search/'
         with httpx.Client() as client:
             response = client.get(node_query_url, params=params)
-        nodes = response.json().get("result", [])
+        nodes = response.json().get('result', [])
 
         if len(nodes) > 0:
             neo4j_node = nodes[0]
@@ -246,14 +239,13 @@ async def batch_create_4j_foldernodes(folders: list) -> httpx.Response:
     url = ConfigClass.ENTITYINFO_SERVICE + 'folders/batch'
     batch_create_payload = {
         'payload': folders,
-        'zone': ConfigClass.GREEN_ZONE_LABEL if
-        ConfigClass.namespace == 'greenroom' else ConfigClass.CORE_ZONE_LABEL,
+        'zone': ConfigClass.GREEN_ZONE_LABEL if ConfigClass.namespace == 'greenroom' else ConfigClass.CORE_ZONE_LABEL,
         'link_container': False,
     }
     async with httpx.AsyncClient() as client:
         saved = await client.post(url, json=batch_create_payload, timeout=3600)
         if saved.status_code != 200:
-            raise Exception("Fail to create folder in neo4j %s" % (saved.__dict__))
+            raise Exception('Fail to create folder in neo4j %s' % (saved.__dict__))
     return saved
 
 
@@ -269,18 +261,9 @@ async def batch_link_folders(relations: list) -> httpx.Response:
     Return:
         - http response
     """
-    data = {
-        'payload': relations,
-        'params_location': ['start', 'end'],
-        'start_label': 'Folder',
-        'end_label': 'Folder'
-    }
+    data = {'payload': relations, 'params_location': ['start', 'end'], 'start_label': 'Folder', 'end_label': 'Folder'}
     async with httpx.AsyncClient() as client:
-        response = await client.post(
-            ConfigClass.NEO4J_SERVICE + 'relations/own/batch',
-            json=data,
-            timeout=3600
-        )
+        response = await client.post(ConfigClass.NEO4J_SERVICE + 'relations/own/batch', json=data, timeout=3600)
     if response.status_code != 200:
         raise (Exception('[bulk_link_project Error] {} {}'.format(response.status_code, response.text)))
 
