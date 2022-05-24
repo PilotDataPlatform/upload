@@ -33,7 +33,6 @@ from app.commons.data_providers.redis_project_session_job import (
 )
 from app.commons.project_client import ProjectClient
 from app.commons.project_exceptions import ProjectNotFoundException
-
 from app.commons.service_connection.minio_client import get_minio_client
 from app.config import ConfigClass
 from app.models.base_models import APIResponse, EAPIResponseCode
@@ -94,7 +93,6 @@ class APIUpload:
         self.__logger = LoggerFactory('api_data_upload').get_logger()
         self.geid_client = GEIDClient()
         self.project_client = ProjectClient(ConfigClass.PROJECT_SERVICE, ConfigClass.REDIS_URL)
-
 
     @router.post(
         '/files/jobs',
@@ -222,7 +220,7 @@ class APIUpload:
             await run_in_threadpool(bulk_lock_operation, lock_keys, 'write')
 
             _res.result = job_list
-            
+
         except ProjectNotFoundException as e:
             _res.error_msg = str(e)
             _res.code = EAPIResponseCode.not_found
@@ -234,7 +232,7 @@ class APIUpload:
         except Exception as e:
             _res.error_msg = "Error when pre uploading " + str(e)
             _res.code = EAPIResponseCode.internal_error
-        
+
         return _res.json_response()
 
     @router.get(

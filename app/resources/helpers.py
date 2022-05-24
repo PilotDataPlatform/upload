@@ -57,7 +57,7 @@ async def generate_archive_preview(file_path: str, file_type: str = 'zip') -> di
                     'is_dir': False,
                 }
     return results
-    
+
 
 async def send_to_queue(payload: dict) -> httpx.Response:
     """

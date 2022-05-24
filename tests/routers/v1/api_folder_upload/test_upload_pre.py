@@ -226,7 +226,7 @@ async def test_files_jobs_adds_folder_should_return_200_when_success(
         'app.commons.project_client.ProjectClient.get',
         return_value={'any': 'any', 'global_entity_id': 'fake_global_entity_id'}
     )
-    
+
     httpx_mock.add_response(
         method='GET',
         url='http://metadata_service/v1/items/search/?parent_path=admin&name=test&'

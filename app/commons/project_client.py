@@ -21,8 +21,7 @@ import json
 import aioredis
 import httpx
 
-from .project_exceptions import ProjectException
-from .project_exceptions import ProjectNotFoundException
+from .project_exceptions import ProjectException, ProjectNotFoundException
 
 CACHE_PREFIX = 'project_client-'
 CACHE_EXPIRY = 300
