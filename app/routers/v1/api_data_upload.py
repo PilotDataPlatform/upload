@@ -31,6 +31,9 @@ from app.commons.data_providers.redis_project_session_job import (
     SessionJob,
     get_fsm_object,
 )
+from app.commons.project_client import ProjectClient
+from app.commons.project_exceptions import ProjectNotFoundException
+
 from app.commons.service_connection.minio_client import get_minio_client
 from app.config import ConfigClass
 from app.models.base_models import APIResponse, EAPIResponseCode
@@ -51,7 +54,7 @@ from app.resources.error_handler import (
     catch_internal,
     customized_error_template,
 )
-from app.resources.helpers import generate_archive_preview, get_project, send_to_queue
+from app.resources.helpers import generate_archive_preview, send_to_queue
 from app.resources.lock import (
     ResourceAlreadyInUsed,
     bulk_lock_operation,
@@ -65,7 +68,6 @@ _API_NAMESPACE = 'api_data_upload'
 _JOB_TYPE = 'data_upload'
 
 
-# TODO Check if we need the authorization here
 @cbv.cbv(router)
 class APIUpload:
     """
@@ -91,6 +93,8 @@ class APIUpload:
     def __init__(self):
         self.__logger = LoggerFactory('api_data_upload').get_logger()
         self.geid_client = GEIDClient()
+        self.project_client = ProjectClient(ConfigClass.PROJECT_SERVICE, ConfigClass.REDIS_URL)
+
 
     @router.post(
         '/files/jobs',
@@ -148,13 +152,7 @@ class APIUpload:
             return _res.json_response()
 
         try:
-            project_info = await get_project(project_code)
-            if not project_info:
-                """this will never happens because project_code is a mandory field."""
-                _res.code = EAPIResponseCode.not_found
-                _res.result = {}
-                _res.error_msg = 'Container or Dataset not found'
-                return _res.json_response()
+            _ = await self.project_client.get(code=request_payload.project_code)
 
             conflict_file_paths, conflict_folder_paths = [], []
             # handle filename conflicts
@@ -224,15 +222,20 @@ class APIUpload:
             await run_in_threadpool(bulk_lock_operation, lock_keys, 'write')
 
             _res.result = job_list
-            return _res.json_response()
+            
+        except ProjectNotFoundException as e:
+            _res.error_msg = str(e)
+            _res.code = EAPIResponseCode.not_found
+
         except ResourceAlreadyInUsed as e:
             _res.error_msg = str(e)
             _res.code = EAPIResponseCode.conflict
-            return _res.json_response()
+
         except Exception as e:
             _res.error_msg = "Error when pre uploading " + str(e)
             _res.code = EAPIResponseCode.internal_error
-            return _res.json_response()
+        
+        return _res.json_response()
 
     @router.get(
         '/upload/status/{job_id}', tags=[_API_TAG], response_model=GETJobStatusResponse, summary='get upload job status'
@@ -497,12 +500,6 @@ async def folder_creation(project_code: str, operator: str, file_path: str, file
                 if response.status_code != 200:
                     raise Exception("Fail to create metadata in postgres: %s" % (response.__dict__))
 
-            # # REMOVE IT AFTER MIGRATION <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-            # res = await batch_create_4j_foldernodes(to_create_folders)
-            # __logger.info('Neo4j Folders create result: {}'.format(res.text))
-            # relations_saved = await batch_link_folders(folder_relations)
-
-            # __logger.info('Neo4j Folders relations result: {}'.format(relations_saved.text))
             __logger.info('Neo4j Folders saved: {}'.format(len(to_create_folders)))
             __logger.info('Neo4j Node Creation Time: ' + str(time.time() - batch_folder_create_start_time))
 
@@ -763,9 +760,7 @@ async def get_conflict_file_paths(data, project_code):
             'recursive': False,
         }
 
-        # node_query_url = ConfigClass.NEO4J_SERVICE + 'nodes/%s/query' % neo4j_zone_label
-        # async with httpx.AsyncClient() as client:
-        #     response = await client.post(node_query_url, json=payload)
+        # search upto the new metadata service if the input files
         node_query_url = ConfigClass.METADATA_SERVICE + 'items/search/'
         async with httpx.AsyncClient() as client:
             response = await client.get(node_query_url, params=params)

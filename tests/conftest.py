@@ -33,11 +33,11 @@ environ['CORE_ZONE_LABEL'] = 'Core'
 environ['GREEN_ZONE_LABEL'] = 'Greenroom'
 
 environ['ENTITYINFO_SERVICE'] = 'http://ENTITYINFO_SERVICE'
-environ['NEO4J_SERVICE'] = 'http://NEO4J_SERVICE'
 environ['METADATA_SERVICE'] = 'http://METADATA_SERVICE'
 environ['QUEUE_SERVICE'] = 'http://QUEUE_SERVICE'
 environ['DATA_OPS_UTIL'] = 'http://DATA_OPS_UTIL_SERVICE'
 environ['KEYCLOAK_URL'] = 'http://KEYCLOAK_URL'
+environ['PROJECT_SERVICE'] = 'http://PROJECT_SERVICE'
 
 environ['MINIO_OPENID_CLIENT'] = 'MINIO_OPENID_CLIENT'
 environ['MINIO_ENDPOINT'] = 'MINIO_ENDPOINT'
@@ -45,10 +45,6 @@ environ['MINIO_HTTPS'] = 'true'
 environ['MINIO_ACCESS_KEY'] = 'MINIO_ACCESS_KEY'
 environ['MINIO_SECRET_KEY'] = 'MINIO_SECRET_KEY'
 environ['KEYCLOAK_MINIO_SECRET'] = 'KEYCLOAK_MINIO_SECRET'
-
-environ['NEO4J_URL'] = '127.0.0.1'
-environ['NEO4J_USER'] = ''
-environ['NEO4J_PASS'] = '0'
 
 environ['REDIS_HOST'] = '127.0.0.1'
 environ['REDIS_PORT'] = '6379'
