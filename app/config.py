@@ -13,10 +13,12 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Any, Dict
+from typing import Any
+from typing import Dict
 
 from common import VaultClient
-from pydantic import BaseSettings, Extra
+from pydantic import BaseSettings
+from pydantic import Extra
 from starlette.config import Config
 
 config = Config('.env')

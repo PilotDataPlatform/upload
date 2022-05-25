@@ -19,7 +19,8 @@ from functools import wraps
 from common import LoggerFactory
 from fastapi import HTTPException
 
-from app.models.base_models import APIResponse, EAPIResponseCode
+from app.models.base_models import APIResponse
+from app.models.base_models import EAPIResponseCode
 from app.resources.decorator import HeaderMissingException
 
 _logger = LoggerFactory('internal_error').get_logger()

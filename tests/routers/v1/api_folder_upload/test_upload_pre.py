@@ -14,7 +14,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import pytest
-
 from common import ProjectNotFoundException
 
 pytestmark = pytest.mark.asyncio  # set the mark to all tests in this file.
