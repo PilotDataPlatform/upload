@@ -16,8 +16,7 @@
 from enum import Enum
 from typing import List
 
-from pydantic import BaseModel
-from pydantic import Field
+from pydantic import BaseModel, Field
 
 from .base_models import APIResponse
 
