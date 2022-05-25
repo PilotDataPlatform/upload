@@ -15,7 +15,7 @@
 
 import pytest
 
-from app.commons.project_exceptions import ProjectNotFoundException
+from common import ProjectNotFoundException
 
 pytestmark = pytest.mark.asyncio  # set the mark to all tests in this file.
 
@@ -53,17 +53,8 @@ async def test_files_jobs_return_400_when_session_job_type_is_wrong(test_async_c
 
 
 async def test_files_jobs_return_404_when_project_info_not_found(test_async_client, httpx_mock, mocker):
-    # httpx_mock.add_response(
-    #     method='POST',
-    #     url='http://neo4j_service/v1/neo4j/nodes/Container/query',
-    #     json=[],
-    #     status_code=200,
-    # )
 
-    # REMOVE THIS AFTER NEW PUBLISH OF PROJECT CLIENT
-    m = mocker.patch(
-        'app.commons.project_client.ProjectClient.get', return_value=[]
-    )
+    m = mocker.patch('common.ProjectClient.get', return_value=[])
     m.side_effect = ProjectNotFoundException
 
     response = await test_async_client.post(
@@ -84,16 +75,9 @@ async def test_files_jobs_return_404_when_project_info_not_found(test_async_clie
 
 
 async def test_file_with_conflict_path_should_return_409(test_async_client, httpx_mock, mocker):
-    # httpx_mock.add_response(
-    #     method='POST',
-    #     url='http://neo4j_service/v1/neo4j/nodes/Container/query',
-    #     json=[{'any': 'any', 'global_entity_id': 'fake_global_entity_id'}],
-    #     status_code=200,
-    # )
 
-    # REMOVE THIS AFTER NEW PUBLISH OF PROJECT CLIENT
     mocker.patch(
-        'app.commons.project_client.ProjectClient.get',
+        'common.ProjectClient.get',
         return_value={'any': 'any', 'global_entity_id': 'fake_global_entity_id'}
     )
 
@@ -125,16 +109,9 @@ async def test_file_with_conflict_path_should_return_409(test_async_client, http
 
 
 async def test_files_jobs_should_return_200_when_success(test_async_client, httpx_mock, create_job_folder, mocker):
-    # httpx_mock.add_response(
-    #     method='POST',
-    #     url='http://neo4j_service/v1/neo4j/nodes/Container/query',
-    #     json=[{'any': 'any', 'global_entity_id': 'fake_global_entity_id'}],
-    #     status_code=200,
-    # )
 
-    # REMOVE THIS AFTER NEW PUBLISH OF PROJECT CLIENT
     mocker.patch(
-        'app.commons.project_client.ProjectClient.get',
+        'common.ProjectClient.get',
         return_value={'any': 'any', 'global_entity_id': 'fake_global_entity_id'}
     )
 
@@ -165,16 +142,9 @@ async def test_files_jobs_should_return_200_when_success(test_async_client, http
 async def test_files_jobs_type_AS_FOLDER_should_return_200_when_success(
     test_async_client, httpx_mock, create_job_folder, mocker
 ):
-    # httpx_mock.add_response(
-    #     method='POST',
-    #     url='http://neo4j_service/v1/neo4j/nodes/Container/query',
-    #     json=[{'any': 'any', 'global_entity_id': 'fake_global_entity_id'}],
-    #     status_code=200,
-    # )
 
-    # REMOVE THIS AFTER NEW PUBLISH OF PROJECT CLIENT
     mocker.patch(
-        'app.commons.project_client.ProjectClient.get',
+        'common.ProjectClient.get',
         return_value={'any': 'any', 'global_entity_id': 'fake_global_entity_id'}
     )
 
@@ -214,16 +184,9 @@ async def test_files_jobs_adds_folder_should_return_200_when_success(
     create_job_folder,
     mocker
 ):
-    # httpx_mock.add_response(
-    #     method='POST',
-    #     url='http://neo4j_service/v1/neo4j/nodes/Container/query',
-    #     json=[{'any': 'any', 'global_entity_id': 'fake_global_entity_id'}],
-    #     status_code=200,
-    # )
 
-    # REMOVE THIS AFTER NEW PUBLISH OF PROJECT CLIENT
     mocker.patch(
-        'app.commons.project_client.ProjectClient.get',
+        'common.ProjectClient.get',
         return_value={'any': 'any', 'global_entity_id': 'fake_global_entity_id'}
     )
 

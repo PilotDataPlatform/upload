@@ -31,7 +31,7 @@ py2neo = "^2021.2.3"
 aiofiles = "^0.8.0"
 pytest-mock = "^3.7.0"
 httpx = "^0.22.0"
-pilot-platform-common = "^0.0.25"
+pilot-platform-common = "^0.0.27"
 
 [tool.poetry.dev-dependencies]
 pytest = "6.2.5"

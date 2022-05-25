@@ -20,7 +20,12 @@ import unicodedata as ud
 from typing import Optional
 
 import httpx
-from common import GEIDClient, LoggerFactory
+from common import (
+    GEIDClient,
+    LoggerFactory,
+    ProjectClient,
+    ProjectNotFoundException
+)
 from fastapi import APIRouter, BackgroundTasks, File, Form, Header, UploadFile
 from fastapi.concurrency import run_in_threadpool
 from fastapi_utils import cbv
@@ -31,8 +36,6 @@ from app.commons.data_providers.redis_project_session_job import (
     SessionJob,
     get_fsm_object,
 )
-from app.commons.project_client import ProjectClient
-from app.commons.project_exceptions import ProjectNotFoundException
 from app.commons.service_connection.minio_client import get_minio_client
 from app.config import ConfigClass
 from app.models.base_models import APIResponse, EAPIResponseCode
