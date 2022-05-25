@@ -61,6 +61,7 @@ from app.resources.lock import ResourceAlreadyInUsed
 from app.resources.lock import bulk_lock_operation
 from app.resources.lock import unlock_resource
 
+
 router = APIRouter()
 
 _API_TAG = 'V1 Upload'
@@ -103,7 +104,7 @@ class APIUpload:
                  Init an async upload job, returns list of job identifier.',
     )
     @catch_internal(_API_NAMESPACE)
-    @header_enforcement(["session_id"])
+    @header_enforcement(['session_id'])
     async def upload_pre(self, request_payload: PreUploadPOST, session_id=Header(None)):
         """
         Summary:
@@ -124,7 +125,6 @@ class APIUpload:
             - data(SingleFileForm):
                 - resumable_filename(string): the name of file
                 - resumable_relative_path: the relative path of the file
-                - dcm_id(string): special identifier for dcm pipeline
             - upload_message(string):
             - current_folder_node(string): the root level folder that will be
                 uploaded
@@ -176,11 +176,6 @@ class APIUpload:
             # for the bug detail. Please check the 2244
             for upload_data in request_payload.data:
                 upload_data.resumable_filename = ud.normalize('NFC', upload_data.resumable_filename)
-                upload_data.resumable_filename = (
-                    upload_data.dcm_id + '_' + upload_data.resumable_filename
-                    if upload_data.dcm_id and upload_data.dcm_id != 'undefined'
-                    else upload_data.resumable_filename
-                )
 
             #######################################################
 
@@ -202,7 +197,7 @@ class APIUpload:
             for upload_data, resumable_identifier in zip(request_payload.data, geids):
 
                 await status_mgr.set_job_id(resumable_identifier)
-                file_path = upload_data.resumable_relative_path + "/" + upload_data.resumable_filename
+                file_path = upload_data.resumable_relative_path + '/' + upload_data.resumable_filename
                 status_mgr.set_source(file_path)
                 status_mgr.add_payload('resumable_identifier', resumable_identifier)
 
@@ -231,7 +226,7 @@ class APIUpload:
             _res.code = EAPIResponseCode.conflict
 
         except Exception as e:
-            _res.error_msg = "Error when pre uploading " + str(e)
+            _res.error_msg = 'Error when pre uploading ' + str(e)
             _res.code = EAPIResponseCode.internal_error
 
         return _res.json_response()
@@ -240,7 +235,7 @@ class APIUpload:
         '/upload/status/{job_id}', tags=[_API_TAG], response_model=GETJobStatusResponse, summary='get upload job status'
     )
     @catch_internal(_API_NAMESPACE)
-    @header_enforcement(["session_id"])
+    @header_enforcement(['session_id'])
     async def get_status(self, job_id, session_id: str = Header(None)):
         """
         Summary:
@@ -267,7 +262,7 @@ class APIUpload:
 
     @router.post('/files/chunks', tags=[_API_TAG], response_model=ChunkUploadResponse, summary='upload chunks process.')
     @catch_internal(_API_NAMESPACE)
-    @header_enforcement(["session_id"])
+    @header_enforcement(['session_id'])
     async def upload_chunks(
         self,
         project_code: str = Form(...),
@@ -279,7 +274,6 @@ class APIUpload:
         resumable_total_chunks: int = Form(...),
         resumable_total_size: int = Form(...),
         tags: list = Form([]),
-        dcm_id: str = Form('undefined'),
         session_id: str = Header(None),
         chunk_data: UploadFile = File(...),
     ):
@@ -298,7 +292,6 @@ class APIUpload:
             - resumable_relative_path(string): the relative path of the file
             - resumable_identifier(string): The job identifier for each file
             - resumable_chunk_number(string): The integer id for each chunk
-            - dcm_id(string): special identifier for dcm pipeline
         Return:
             - 200, Succeed
         """
@@ -311,17 +304,13 @@ class APIUpload:
         # for the bug detail. Please check the ticket 2244
         resumable_filename = ud.normalize('NFC', resumable_filename)
 
-        # update filename if the file is for dcm piepline
-        resumable_filename = (
-            dcm_id + '_' + resumable_filename if dcm_id and dcm_id != 'undefined' else resumable_filename
-        )
-
         # get the temp directory, create if it doesnot exist
         async def create_tmp_folder(resumable_identifier):
             temp_dir = os.path.join(ConfigClass.TEMP_BASE, resumable_identifier)
             if not os.path.isdir(temp_dir):
                 os.makedirs(temp_dir)
             return temp_dir
+
         temp_dir = await create_tmp_folder(resumable_identifier)
 
         # then save the chunk to the temp directory
@@ -355,7 +344,7 @@ class APIUpload:
         summary='create a background worker to combine chunks, transfer file to the destination namespace',
     )
     @catch_internal(_API_NAMESPACE)
-    @header_enforcement(["session_id"])
+    @header_enforcement(['session_id'])
     async def on_success(
         self,
         request_payload: OnSuccessUploadPOST,
@@ -379,7 +368,6 @@ class APIUpload:
             - resumable_identifier(string): The job identifier for each file
             - resumable_total_chunks(string): The number of total chunks
             - resumable_total_size(float): the file size
-            - dcm_id(string): special identifier for dcm pipeline
             - process_pipeline(string optional): default is None  # cli
             - from_parents(list optional): default is None  # cli
             - upload_message(string optional): default is ''  # cli
@@ -398,13 +386,6 @@ class APIUpload:
         # since some of the browser will encode them into NFD form
         # for the bug detail. Please check the ticket 2244
         request_payload.resumable_filename = ud.normalize('NFC', request_payload.resumable_filename)
-
-        # check pipeline id
-        request_payload.resumable_filename = (
-            request_payload.dcm_id + '_' + request_payload.resumable_filename
-            if request_payload.dcm_id and request_payload.dcm_id != 'undefined'
-            else request_payload.resumable_filename
-        )
 
         # init status manager
         status_mgr = await get_fsm_object(
@@ -460,7 +441,7 @@ async def folder_creation(project_code: str, operator: str, file_path: str, file
     namespace = ConfigClass.namespace
     folder_create_duration = 0
 
-    __logger.info("test")
+    __logger.info('test')
 
     # create folder and folder nodes
     folder_create_start_time = time.time()
@@ -474,7 +455,7 @@ async def folder_creation(project_code: str, operator: str, file_path: str, file
     to_create_folders = folder_mgr.to_create
 
     # last_folder_node_geid = folder_mgr.last_node.folder_parent_geid if folder_mgr.last_node else None
-    folder_create_duration += (time.time() - folder_create_start_time)
+    folder_create_duration += time.time() - folder_create_start_time
 
     __logger.info('Save to Cache Folder Time: ' + str(folder_create_duration))
 
@@ -493,11 +474,11 @@ async def folder_creation(project_code: str, operator: str, file_path: str, file
             await run_in_threadpool(bulk_lock_operation, lock_keys, 'write')
             __logger.info('Folder lock time: ' + str(time.time() - batch_folder_create_start_time))
 
-            url = ConfigClass.METADATA_SERVICE + "items/batch/"
+            url = ConfigClass.METADATA_SERVICE + 'items/batch/'
             async with httpx.AsyncClient() as client:
-                response = await client.post(url, json={"items": to_create_folders}, timeout=10)
+                response = await client.post(url, json={'items': to_create_folders}, timeout=10)
                 if response.status_code != 200:
-                    raise Exception("Fail to create metadata in postgres: %s" % (response.__dict__))
+                    raise Exception('Fail to create metadata in postgres: %s' % (response.__dict__))
 
             __logger.info('Neo4j Folders saved: {}'.format(len(to_create_folders)))
             __logger.info('Neo4j Node Creation Time: ' + str(time.time() - batch_folder_create_start_time))
@@ -510,7 +491,7 @@ async def folder_creation(project_code: str, operator: str, file_path: str, file
             raise e
         # for other error we will unlock the folders
         except Exception as e:
-            __logger.error("Error when create the folder tree: {}".format(e))
+            __logger.error('Error when create the folder tree: {}'.format(e))
             await run_in_threadpool(bulk_lock_operation, lock_keys, 'write', False)
             raise e
 
@@ -537,7 +518,6 @@ async def finalize_worker(
             - calling the provenence service to create activity log of file.
             - calling the dataops utiltiy api to add the zip preview if upload
                 zip file.
-            - send the event to message queue for downstream pipeline(dcm pipeline)
             - update the job status.
             - remove the temperary folder
             - unlock the file node
@@ -550,7 +530,6 @@ async def finalize_worker(
             - resumable_identifier(string): The job identifier for each file
             - resumable_total_chunks(string): The number of total chunks
             - resumable_total_size(float): the file size
-            - dcm_id(string): special identifier for dcm pipeline
             - process_pipeline(string optional): default is None  # cli
             - from_parents(list optional): default is None  # cli
             - upload_message(string optional): default is ''  # cli
@@ -604,8 +583,6 @@ async def finalize_worker(
 
         # after use the minio the pipeline will also use the minio location
         obj_path = await run_in_threadpool(os.path.join, file_path, file_name)
-        minio_http = ('https://' if ConfigClass.MINIO_HTTPS else 'http://') + ConfigClass.MINIO_ENDPOINT
-        minio_location = 'minio://%s/%s/%s' % (minio_http, bucket, obj_path)
         mc = await get_minio_client(access_token, refresh_token)
         logger.info('Minio Connection Success')
         version_id = await mc.fput_object(bucket, obj_path, temp_merged_file_full_path)
@@ -621,7 +598,6 @@ async def finalize_worker(
             namespace,
             project_code,
             request_payload.tags,
-            request_payload.dcm_id,
             bucket,  # minio attribute
             obj_path,  # minio attribute
             version_id,  # minio attribute
@@ -641,38 +617,18 @@ async def finalize_worker(
                 archive_preview = await generate_archive_preview(temp_merged_file_full_path)
                 payload = {
                     'archive_preview': archive_preview,
-                    'file_id': created_entity.get("id"),
+                    'file_id': created_entity.get('id'),
                 }
                 async with httpx.AsyncClient() as client:
-                    await client.post(
-                        ConfigClass.DATA_OPS_UTIL + 'archive',
-                        json=payload,
-                        timeout=3600
-                    )
+                    await client.post(ConfigClass.DATA_OPS_UTIL + 'archive', json=payload, timeout=3600)
         except Exception as e:
-            geid = created_entity.get("id")
+            geid = created_entity.get('id')
             logger.error(f'Error adding file preview for {geid}: {str(e)}')
             raise e
 
-        # send to queue
-        payload = {
-            'event_type': 'data_uploaded',
-            'payload': {
-                'input_path': minio_location,  # update to minio
-                'project': project_code,
-                'dcm_id': request_payload.dcm_id,
-                'uploader': operator,
-                'source_geid': created_entity.get("id"),
-                # new here the token for following pipeline
-                'auth_token': {'at': access_token, 'rt': refresh_token},
-            },
-            'create_timestamp': time.time(),
-        }
-        logger.info('Sending Message To Queue: ' + str(payload))
-        await send_to_queue(payload)
         await status_mgr.set_status(EState.FINALIZED.name)
 
-        status_mgr.add_payload('source_geid', created_entity.get("id"))
+        status_mgr.add_payload('source_geid', created_entity.get('id'))
         await status_mgr.set_status(EState.SUCCEED.name)
         logger.info('Upload Job Done.')
 
@@ -710,7 +666,7 @@ async def get_conflict_folder_paths(project_code: str, current_folder_node: str)
     namespace = ConfigClass.namespace
 
     conflict_folder_paths = []
-    file_path, file_name = current_folder_node.rsplit("/", 1)
+    file_path, file_name = current_folder_node.rsplit('/', 1)
     params = {
         'parent_path': file_path,
         'name': file_name,
@@ -723,7 +679,7 @@ async def get_conflict_folder_paths(project_code: str, current_folder_node: str)
     node_query_url = ConfigClass.METADATA_SERVICE + 'items/search/'
     async with httpx.AsyncClient() as client:
         response = await client.get(node_query_url, params=params)
-    nodes = response.json().get("result", [])
+    nodes = response.json().get('result', [])
 
     if len(nodes) > 0:
         conflict_folder_paths.append({'display_path': current_folder_node, 'type': 'Folder'})
@@ -763,7 +719,7 @@ async def get_conflict_file_paths(data, project_code):
         node_query_url = ConfigClass.METADATA_SERVICE + 'items/search/'
         async with httpx.AsyncClient() as client:
             response = await client.get(node_query_url, params=params)
-        nodes = response.json().get("result", [])
+        nodes = response.json().get('result', [])
 
         if len(nodes) > 0:
             conflict_file_paths.append(

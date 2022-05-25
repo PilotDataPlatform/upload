@@ -30,7 +30,6 @@ class EUploadJobType(Enum):
 class SingleFileForm(BaseModel):
     resumable_filename: str
     resumable_relative_path: str = ''
-    dcm_id: str = 'undefined'
 
 
 class PreUploadPOST(BaseModel):
@@ -82,7 +81,6 @@ class ChunkUploadPOST(BaseModel):
     resumable_total_chunks: int
     resumable_total_size: float
     tags: List[str] = []
-    dcm_id: str = 'undefined'
     metadatas: dict = None
 
 
@@ -103,7 +101,6 @@ class OnSuccessUploadPOST(BaseModel):
     resumable_total_chunks: int
     resumable_total_size: float
     tags: List[str] = []  # check here
-    dcm_id: str = 'undefined'
     metadatas: dict = None  # manifest
     process_pipeline: str = None  # cli
     from_parents: list = None  # cli

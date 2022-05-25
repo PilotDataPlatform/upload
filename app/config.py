@@ -53,7 +53,6 @@ class Settings(BaseSettings):
 
     # microservices
     ENTITYINFO_SERVICE: str
-    QUEUE_SERVICE: str
     DATA_OPS_UTIL: str
     KEYCLOAK_MINIO_SECRET: str
     METADATA_SERVICE: str
@@ -95,7 +94,6 @@ class Settings(BaseSettings):
         # services
         self.ENTITYINFO_SERVICE += '/v1/'
 
-        self.QUEUE_SERVICE += '/v1/'
         self.DATA_OPS_UT_V2 = self.DATA_OPS_UTIL + '/v2/'
         self.DATA_OPS_UTIL += '/v1/'
         self.METADATA_SERVICE = self.METADATA_SERVICE + '/v1/'

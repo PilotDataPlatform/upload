@@ -83,7 +83,7 @@ class FolderMgr:
                 self.last_node = new_node
                 # print()
 
-            _file_mgr_logger.warning('Read From db cost ' + str(read_db_duration))
+            _file_mgr_logger.warn('Read From db cost ' + str(read_db_duration))
 
             return []
         except Exception:
@@ -160,7 +160,6 @@ class FolderNode:
             'location_uri': '',
             'version': '',
             'tags': [],
-            'dcm_id': '',
         }
 
         return payload
