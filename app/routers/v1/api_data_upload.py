@@ -20,47 +20,43 @@ import unicodedata as ud
 from typing import Optional
 
 import httpx
-from common import GEIDClient
-from common import LoggerFactory
-from common import ProjectClient
-from common import ProjectNotFoundException
-from fastapi import APIRouter
-from fastapi import BackgroundTasks
-from fastapi import File
-from fastapi import Form
-from fastapi import Header
-from fastapi import UploadFile
+from common import GEIDClient, LoggerFactory, ProjectClient, ProjectNotFoundException
+from fastapi import APIRouter, BackgroundTasks, File, Form, Header, UploadFile
 from fastapi.concurrency import run_in_threadpool
 from fastapi_utils import cbv
 
-from app.commons.data_providers import SrvAioRedisSingleton
-from app.commons.data_providers import session_job_get_status
-from app.commons.data_providers.redis_project_session_job import EState
-from app.commons.data_providers.redis_project_session_job import SessionJob
-from app.commons.data_providers.redis_project_session_job import get_fsm_object
+from app.commons.data_providers import SrvAioRedisSingleton, session_job_get_status
+from app.commons.data_providers.redis_project_session_job import (
+    EState,
+    SessionJob,
+    get_fsm_object,
+)
 from app.commons.service_connection.minio_client import get_minio_client
 from app.config import ConfigClass
-from app.models.base_models import APIResponse
-from app.models.base_models import EAPIResponseCode
+from app.models.base_models import APIResponse, EAPIResponseCode
 from app.models.file_data import SrvFileDataMgr
 from app.models.folder import FolderMgr
-from app.models.models_upload import ChunkUploadResponse
-from app.models.models_upload import EUploadJobType
-from app.models.models_upload import GETJobStatusResponse
-from app.models.models_upload import OnSuccessUploadPOST
-from app.models.models_upload import POSTCombineChunksResponse
-from app.models.models_upload import PreUploadPOST
-from app.models.models_upload import PreUploadResponse
+from app.models.models_upload import (
+    ChunkUploadResponse,
+    EUploadJobType,
+    GETJobStatusResponse,
+    OnSuccessUploadPOST,
+    POSTCombineChunksResponse,
+    PreUploadPOST,
+    PreUploadResponse,
+)
 from app.resources.decorator import header_enforcement
-from app.resources.error_handler import ECustomizedError
-from app.resources.error_handler import catch_internal
-from app.resources.error_handler import customized_error_template
+from app.resources.error_handler import (
+    ECustomizedError,
+    catch_internal,
+    customized_error_template,
+)
 from app.resources.helpers import generate_archive_preview
-from app.resources.helpers import send_to_queue
-from app.resources.lock import ResourceAlreadyInUsed
-from app.resources.lock import bulk_lock_operation
-from app.resources.lock import unlock_resource
-
+from app.resources.lock import (
+    ResourceAlreadyInUsed,
+    bulk_lock_operation,
+    unlock_resource,
+)
 
 router = APIRouter()
 

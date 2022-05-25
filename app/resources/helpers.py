@@ -15,10 +15,6 @@
 
 from zipfile import ZipFile
 
-import httpx
-
-from app.config import ConfigClass
-
 
 async def generate_archive_preview(file_path: str, file_type: str = 'zip') -> dict:
     """
