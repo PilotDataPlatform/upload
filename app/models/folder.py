@@ -167,17 +167,7 @@ class FolderNode:
     # TODO make in to async
     def read_from_db(self, folder_relative_path, folder_name, project_code, zone, creator):
         """read from database."""
-        # query = {
-        #     'folder_relative_path': folder_relative_path,
-        #     'name': folder_name,
-        #     'project_code': project_code,
-        #     'archived': False,
-        # }
 
-        # neo4j_client = Neo4jClient()
-        # node_label = ConfigClass.GREEN_ZONE_LABEL if zone == "greenroom" else ConfigClass.CORE_ZONE_LABEL
-        # neo4j_node = neo4j_client.get_node(node_label, query)
-        # attribute_map = {}
         params = {
             'name': self.folder_name,
             'container_code': project_code,
@@ -188,25 +178,22 @@ class FolderNode:
         if self.folder_relative_path != '':
             params.update({'parent_path': self.folder_relative_path})
 
-        # node_query_url = ConfigClass.NEO4J_SERVICE + 'nodes/%s/query' % neo4j_zone_label
-        # async with httpx.AsyncClient() as client:
-        #     response = await client.post(node_query_url, json=payload)
-
+        # query from the metadata service
         node_query_url = ConfigClass.METADATA_SERVICE + 'items/search/'
         with httpx.Client() as client:
             response = client.get(node_query_url, params=params)
         nodes = response.json().get('result', [])
 
         if len(nodes) > 0:
-            neo4j_node = nodes[0]
-            self.global_entity_id = neo4j_node['id']
-            self.folder_name = neo4j_node['name']
+            new_node = nodes[0]
+            self.global_entity_id = new_node['id']
+            self.folder_name = new_node['name']
             self.folder_parent_geid = ''
             self.folder_parent_name = ''
-            self.folder_creator = neo4j_node['owner']
-            self.folder_relative_path = neo4j_node['parent_path']
+            self.folder_creator = new_node['owner']
+            self.folder_relative_path = new_node['parent_path']
             self.zone = zone
-            self.project_code = neo4j_node['container_code']
+            self.project_code = new_node['container_code']
             self.exist = True
 
         else:
@@ -245,26 +232,5 @@ async def batch_create_4j_foldernodes(folders: list) -> httpx.Response:
     async with httpx.AsyncClient() as client:
         saved = await client.post(url, json=batch_create_payload, timeout=3600)
         if saved.status_code != 200:
-            raise Exception('Fail to create folder in neo4j %s' % (saved.__dict__))
+            raise Exception('Fail to create folder %s' % (saved.__dict__))
     return saved
-
-
-async def batch_link_folders(relations: list) -> httpx.Response:
-    """
-    Summary:
-        The function will call the neo4j service to batch create
-        the link between all batch created node in batch_create_4j_foldernodes.
-    Parameters:
-        - relations(list): The list of the link infomation as
-            - start_params(string): global entity if from
-            - end_params(string): geid
-    Return:
-        - http response
-    """
-    data = {'payload': relations, 'params_location': ['start', 'end'], 'start_label': 'Folder', 'end_label': 'Folder'}
-    async with httpx.AsyncClient() as client:
-        response = await client.post(ConfigClass.NEO4J_SERVICE + 'relations/own/batch', json=data, timeout=3600)
-    if response.status_code != 200:
-        raise (Exception('[bulk_link_project Error] {} {}'.format(response.status_code, response.text)))
-
-    return response

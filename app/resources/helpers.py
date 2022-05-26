@@ -15,10 +15,6 @@
 
 from zipfile import ZipFile
 
-import httpx
-
-from app.config import ConfigClass
-
 
 async def generate_archive_preview(file_path: str, file_type: str = 'zip') -> dict:
     """
@@ -57,21 +53,3 @@ async def generate_archive_preview(file_path: str, file_type: str = 'zip') -> di
                     'is_dir': False,
                 }
     return results
-
-
-async def get_project(project_code: str) -> dict:
-    """
-    Summary:
-        The function call the neo4j service to check if the
-        input project_code exists.
-    Parameters:
-        - project_code(string): unique code of project
-    Return:
-        - (dict) the project detail
-    """
-    data = {'code': project_code}
-    async with httpx.AsyncClient() as client:
-        response = await client.post(ConfigClass.NEO4J_SERVICE + 'nodes/Container/query', json=data)
-    result = response.json()
-
-    return result[0] if len(result) > 0 else None

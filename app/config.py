@@ -50,11 +50,11 @@ class Settings(BaseSettings):
     GREEN_ZONE_LABEL: str
 
     # microservices
-    NEO4J_SERVICE: str
     ENTITYINFO_SERVICE: str
     DATA_OPS_UTIL: str
     KEYCLOAK_MINIO_SECRET: str
     METADATA_SERVICE: str
+    PROJECT_SERVICE: str
 
     # minio
     MINIO_OPENID_CLIENT: str
@@ -68,12 +68,8 @@ class Settings(BaseSettings):
     REDIS_HOST: str
     REDIS_PORT: int
     REDIS_DB: int
+    REDIS_USER: str = 'default'
     REDIS_PASSWORD: str
-
-    # Neo4j Setup
-    NEO4J_URL: str
-    NEO4J_USER: str
-    NEO4J_PASS: str
 
     OPEN_TELEMETRY_ENABLED: bool = False
     OPEN_TELEMETRY_HOST: str = '127.0.0.1'
@@ -94,8 +90,6 @@ class Settings(BaseSettings):
         self.disk_namespace = self.namespace
 
         # services
-        self.NEO4J_SERVICE_V2 = self.NEO4J_SERVICE + '/v2/neo4j/'
-        self.NEO4J_SERVICE += '/v1/neo4j/'
         self.ENTITYINFO_SERVICE += '/v1/'
 
         self.DATA_OPS_UT_V2 = self.DATA_OPS_UTIL + '/v2/'
@@ -107,6 +101,11 @@ class Settings(BaseSettings):
 
         # temp path mount
         self.TEMP_BASE = self.ROOT_PATH + '/tmp/upload'
+
+        # redis
+        self.REDIS_URL = (
+            f'redis://{self.REDIS_USER}:{self.REDIS_PASSWORD}@{self.REDIS_HOST}' + f':{self.REDIS_PORT}/{self.REDIS_DB}'
+        )
 
 
 ConfigClass = Settings()
