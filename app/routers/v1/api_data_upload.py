@@ -476,8 +476,8 @@ async def folder_creation(project_code: str, operator: str, file_path: str, file
                 if response.status_code != 200:
                     raise Exception('Fail to create metadata in postgres: %s' % (response.__dict__))
 
-            __logger.info('Neo4j Folders saved: {}'.format(len(to_create_folders)))
-            __logger.info('Neo4j Node Creation Time: ' + str(time.time() - batch_folder_create_start_time))
+            __logger.info('New Folders saved: {}'.format(len(to_create_folders)))
+            __logger.info('New Node Creation Time: ' + str(time.time() - batch_folder_create_start_time))
 
             # here we unlock the locked nodes ONLY
             await run_in_threadpool(bulk_lock_operation, lock_keys, 'write', False)
@@ -510,7 +510,7 @@ async def finalize_worker(
             - lock the target file node.
             - create the folder tree if the folder structure does not exist.
             - combine chunks and upload to minio.
-            - calling the dataops utility api to create neo4j/es/atlas record.
+            - calling the dataops utility api to create postgres/es/atlas record.
             - calling the provenence service to create activity log of file.
             - calling the dataops utiltiy api to add the zip preview if upload
                 zip file.
@@ -701,7 +701,7 @@ async def get_conflict_file_paths(data, project_code):
     namespace = ConfigClass.namespace
     conflict_file_paths = []
     for upload_data in data:
-        # now we have to use the neo4j to check duplicate
+        # now we have to use the postgres to check duplicate
         params = {
             'parent_path': upload_data.resumable_relative_path,
             'name': upload_data.resumable_filename,
