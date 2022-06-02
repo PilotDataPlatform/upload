@@ -51,7 +51,7 @@ from app.resources.error_handler import (
     catch_internal,
     customized_error_template,
 )
-from app.resources.helpers import generate_archive_preview
+from app.resources.helpers import generate_archive_preview, update_file_operation_logs
 from app.resources.lock import (
     ResourceAlreadyInUsed,
     bulk_lock_operation,
@@ -621,6 +621,17 @@ async def finalize_worker(
             geid = created_entity.get('id')
             logger.error(f'Error adding file preview for {geid}: {str(e)}')
             raise e
+
+        # update full path to Greenroom/<display_path> for audit log
+        obj_path = (
+            (ConfigClass.GREEN_ZONE_LABEL if namespace == 'greenroom' else ConfigClass.CORE_ZONE_LABEL) + '/' + obj_path
+        )
+        await update_file_operation_logs(
+            operator,
+            obj_path,
+            project_code,
+            extra={'upload_message': request_payload.upload_message},
+        )
 
         await status_mgr.set_status(EState.FINALIZED.name)
 
