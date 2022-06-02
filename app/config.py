@@ -51,6 +51,7 @@ class Settings(BaseSettings):
 
     # microservices
     ENTITYINFO_SERVICE: str
+    PROVENANCE_SERVICE: str
     DATA_OPS_UTIL: str
     KEYCLOAK_MINIO_SECRET: str
     METADATA_SERVICE: str
@@ -95,6 +96,7 @@ class Settings(BaseSettings):
         self.DATA_OPS_UT_V2 = self.DATA_OPS_UTIL + '/v2/'
         self.DATA_OPS_UTIL += '/v1/'
         self.METADATA_SERVICE = self.METADATA_SERVICE + '/v1/'
+        self.PROVENANCE_SERVICE = self.PROVENANCE_SERVICE + '/v1/'
 
         # minio
         self.MINIO_TMP_PATH = self.ROOT_PATH + '/tmp/'
