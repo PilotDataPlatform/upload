@@ -221,7 +221,7 @@ class APIUpload:
 
             await redis_pipeline.execute()
             # lock all the files to prevent other user uploading same name
-            # await run_in_threadpool(bulk_lock_operation, lock_keys, 'write')
+            await run_in_threadpool(bulk_lock_operation, lock_keys, 'write')
 
             _res.result = job_list
 
@@ -322,7 +322,6 @@ class APIUpload:
 
         # using the boto3 to upload chunks directly into minio server
         try:
-
             boto3_client = await get_boto3_client(
                 ConfigClass.MINIO_ENDPOINT, temp_credentials=temp_credential, https=ConfigClass.MINIO_HTTPS
             )
@@ -331,7 +330,7 @@ class APIUpload:
 
             # dirctly proxy to the server
             etag_info = await boto3_client.part_upload(
-                bucket, file_key, resumable_identifier, resumable_chunk_number, 'chunk_data\n'  # here is upload id
+                bucket, file_key, resumable_identifier, resumable_chunk_number, chunk_data
             )
             # and then collect the etag for third api
             redis_key = '%s:%s' % (resumable_identifier, resumable_chunk_number)
