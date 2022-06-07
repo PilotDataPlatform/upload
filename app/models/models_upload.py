@@ -37,9 +37,7 @@ class PreUploadPOST(BaseModel):
     project_code: str
     operator: str
     job_type: str = 'AS_FOLDER | AS_FILE'
-    folder_tags: List[str] = []
     data: List[SingleFileForm]
-    upload_message = ''
     current_folder_node = ''
     incremental = False  # TODO remove
 

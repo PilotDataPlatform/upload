@@ -32,6 +32,7 @@ pytest-mock = "^3.7.0"
 httpx = "^0.22.0"
 pilot-platform-common = "^0.0.27"
 pre-commit = "^2.19.0"
+aioboto3 = "^9.6.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "6.2.5"
