@@ -41,7 +41,7 @@ The upload service is one of the component for PILOT project. The main responsib
 
  1. git clone the project:
  ```
- git clone https://github.com/PilotDataPlatform/download.git
+ git clone https://github.com/PilotDataPlatform/upload.git
  ```
 
  2. install the package:
