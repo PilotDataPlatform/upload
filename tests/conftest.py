@@ -145,7 +145,7 @@ async def create_fake_job(monkeypatch):
 
 @pytest.fixture()
 def mock_boto3(monkeypatch):
-    from app.commons.boto3_client import Boto3_Client
+    from common.object_storage_adaptor.boto3_client import Boto3Client
 
     class FakeObject:
         size = b'a'
@@ -170,13 +170,11 @@ def mock_boto3(monkeypatch):
     async def fake_downlaod_object(x, y, z, z1):
         return response
 
-    monkeypatch.setattr(Boto3_Client, 'init_connection', lambda x: fake_init_connection())
-    monkeypatch.setattr(
-        Boto3_Client, 'prepare_multipart_upload', lambda x, y, z: fake_prepare_multipart_upload(x, y, z)
-    )
-    monkeypatch.setattr(Boto3_Client, 'part_upload', lambda x, y, z, z1, z2, z3: fake_part_upload(x, y, z, z1, z2, z3))
-    monkeypatch.setattr(Boto3_Client, 'combine_chunks', lambda x, y, z, z1, z2: fake_combine_chunks(x, y, z, z1, z2))
-    monkeypatch.setattr(Boto3_Client, 'downlaod_object', lambda x, y, z, z1: fake_downlaod_object(x, y, z, z1))
+    monkeypatch.setattr(Boto3Client, 'init_connection', lambda x: fake_init_connection())
+    monkeypatch.setattr(Boto3Client, 'prepare_multipart_upload', lambda x, y, z: fake_prepare_multipart_upload(x, y, z))
+    monkeypatch.setattr(Boto3Client, 'part_upload', lambda x, y, z, z1, z2, z3: fake_part_upload(x, y, z, z1, z2, z3))
+    monkeypatch.setattr(Boto3Client, 'combine_chunks', lambda x, y, z, z1, z2: fake_combine_chunks(x, y, z, z1, z2))
+    monkeypatch.setattr(Boto3Client, 'downlaod_object', lambda x, y, z, z1: fake_downlaod_object(x, y, z, z1))
 
 
 # REMOVE THIS AFTER PACKAGE IS UP

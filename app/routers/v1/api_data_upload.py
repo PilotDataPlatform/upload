@@ -22,11 +22,11 @@ from typing import Optional
 
 import httpx
 from common import GEIDClient, LoggerFactory, ProjectClient, ProjectNotFoundException
+from common.object_storage_adaptor.boto3_client import TokenExpired, get_boto3_client
 from fastapi import APIRouter, BackgroundTasks, File, Form, Header, UploadFile
 from fastapi.concurrency import run_in_threadpool
 from fastapi_utils import cbv
 
-from app.commons.boto3_client import TokenExpired, get_boto3_client
 from app.commons.data_providers import SrvAioRedisSingleton, session_job_get_status
 from app.commons.data_providers.redis_project_session_job import (
     EState,
