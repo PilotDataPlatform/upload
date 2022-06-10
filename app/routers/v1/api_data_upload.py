@@ -329,8 +329,9 @@ class APIUpload:
             file_key = resumable_relative_path + '/' + resumable_filename
 
             # dirctly proxy to the server
+            file_content = await chunk_data.read()
             etag_info = await boto3_client.part_upload(
-                bucket, file_key, resumable_identifier, resumable_chunk_number, chunk_data
+                bucket, file_key, resumable_identifier, resumable_chunk_number, file_content
             )
             # and then collect the etag for third api
             redis_key = '%s:%s' % (resumable_identifier, resumable_chunk_number)
