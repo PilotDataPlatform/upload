@@ -13,6 +13,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import json
 import os
 import shutil
 import time
@@ -21,6 +22,7 @@ from typing import Optional
 
 import httpx
 from common import GEIDClient, LoggerFactory, ProjectClient, ProjectNotFoundException
+from common.object_storage_adaptor.boto3_client import TokenExpired, get_boto3_client
 from fastapi import APIRouter, BackgroundTasks, File, Form, Header, UploadFile
 from fastapi.concurrency import run_in_threadpool
 from fastapi_utils import cbv
@@ -31,7 +33,6 @@ from app.commons.data_providers.redis_project_session_job import (
     SessionJob,
     get_fsm_object,
 )
-from app.commons.service_connection.minio_client import get_minio_client
 from app.config import ConfigClass
 from app.models.base_models import APIResponse, EAPIResponseCode
 from app.models.file_data import SrvFileDataMgr
@@ -101,7 +102,12 @@ class APIUpload:
     )
     @catch_internal(_API_NAMESPACE)
     @header_enforcement(['session_id'])
-    async def upload_pre(self, request_payload: PreUploadPOST, session_id=Header(None)):
+    async def upload_pre(
+        self,
+        request_payload: PreUploadPOST,
+        session_id=Header(None),
+        Authorization: Optional[str] = Header(None),
+    ):
         """
         Summary:
             This is the first api the client side will call before upload
@@ -135,6 +141,7 @@ class APIUpload:
 
         _res = APIResponse()
         project_code = request_payload.project_code
+        namespace = os.environ.get('namespace')
 
         # check job type
         self.__logger.info('Upload Job start')
@@ -166,7 +173,6 @@ class APIUpload:
             if len(conflict_file_paths) > 0 or len(conflict_folder_paths) > 0:
                 return response_conflic_folder_file_names(_res, conflict_file_paths, conflict_folder_paths)
 
-            # filename converting TODO make into decorator
             # here I have to update the special character into NFC form
             # since some of the browser will encode them into NFD form
             # for the bug detail. Please check the 2244
@@ -184,18 +190,22 @@ class APIUpload:
             task_id = self.geid_client.get_GEID()
             status_mgr.add_payload('task_id', task_id)
 
+            # prepare the presigned upload id
+            boto3_client = await get_boto3_client(ConfigClass.MINIO_ENDPOINT, token=Authorization)
+            bucket = ('gr-' if namespace == 'greenroom' else 'core-') + project_code
+            file_keys = [x.resumable_relative_path + '/' + x.resumable_filename for x in request_payload.data]
+            upload_ids = await boto3_client.prepare_multipart_upload(bucket, file_keys)
+
             # then prepare the job for EACH of the uploading files
             job_list, lock_keys = [], []
-            geids = self.geid_client.get_GEID_bulk(len(request_payload.data))
             redis_srv = SrvAioRedisSingleton()
             redis_pipeline = await redis_srv.get_pipeline()
-            namespace = os.environ.get('namespace')
-            for upload_data, resumable_identifier in zip(request_payload.data, geids):
+            for file_key, upload_id in zip(file_keys, upload_ids):
 
-                await status_mgr.set_job_id(resumable_identifier)
-                file_path = upload_data.resumable_relative_path + '/' + upload_data.resumable_filename
-                status_mgr.set_source(file_path)
-                status_mgr.add_payload('resumable_identifier', resumable_identifier)
+                await status_mgr.set_job_id(upload_id)
+                # file_path = upload_data.resumable_relative_path + '/' + upload_data.resumable_filename
+                status_mgr.set_source(file_key)
+                status_mgr.add_payload('resumable_identifier', upload_id)
 
                 await status_mgr.set_status(EState.PRE_UPLOADED.name)
                 job_key, job_value, job_recorded = status_mgr.get_kv_entity()
@@ -203,15 +213,21 @@ class APIUpload:
                 job_list.append(job_recorded)
 
                 # also generate the file lock key for batch lock operation
-                bucket = ('gr-' if namespace == 'greenroom' else 'core-') + project_code
-                lock_key = await run_in_threadpool(os.path.join, bucket, file_path)
+                lock_key = await run_in_threadpool(os.path.join, bucket, file_key)
                 lock_keys.append(lock_key)
+
+            # also cache up the temperary credentials into redis
+            await run_in_threadpool(redis_pipeline.set, session_id, json.dumps(boto3_client.temp_credentials))
 
             await redis_pipeline.execute()
             # lock all the files to prevent other user uploading same name
             await run_in_threadpool(bulk_lock_operation, lock_keys, 'write')
 
             _res.result = job_list
+
+        except TokenExpired as e:
+            _res.error_msg = str(e)
+            _res.code = EAPIResponseCode.bad_request
 
         except ProjectNotFoundException as e:
             _res.error_msg = str(e)
@@ -300,21 +316,26 @@ class APIUpload:
         # for the bug detail. Please check the ticket 2244
         resumable_filename = ud.normalize('NFC', resumable_filename)
 
-        # get the temp directory, create if it doesnot exist
-        async def create_tmp_folder(resumable_identifier):
-            temp_dir = os.path.join(ConfigClass.TEMP_BASE, resumable_identifier)
-            if not os.path.isdir(temp_dir):
-                os.makedirs(temp_dir)
-            return temp_dir
+        redis_srv = SrvAioRedisSingleton()
+        credential_str = await redis_srv.get_by_key(session_id)
+        temp_credential = json.loads(credential_str)
 
-        temp_dir = await create_tmp_folder(resumable_identifier)
-
-        # then save the chunk to the temp directory
+        # using the boto3 to upload chunks directly into minio server
         try:
-            chunk_name = resumable_filename + '_part_%03d' % resumable_chunk_number
-            destination = await run_in_threadpool(os.path.join, temp_dir, chunk_name)
-            self.__logger.info('Start to save chunk {} to destination {}'.format(chunk_name, destination))
-            await run_in_threadpool(save_file, destination, chunk_data)
+            boto3_client = await get_boto3_client(
+                ConfigClass.MINIO_ENDPOINT, temp_credentials=temp_credential, https=ConfigClass.MINIO_HTTPS
+            )
+            bucket = ('gr-' if ConfigClass.namespace == 'greenroom' else 'core-') + project_code
+            file_key = resumable_relative_path + '/' + resumable_filename
+
+            # dirctly proxy to the server
+            etag_info = await boto3_client.part_upload(
+                bucket, file_key, resumable_identifier, resumable_chunk_number, chunk_data
+            )
+            # and then collect the etag for third api
+            redis_key = '%s:%s' % (resumable_identifier, resumable_chunk_number)
+            await redis_srv.set_by_key(redis_key, json.dumps(etag_info))
+
             _res.code = EAPIResponseCode.success
             _res.result = {'msg': 'Succeed'}
         except Exception as e:
@@ -331,6 +352,7 @@ class APIUpload:
 
             _res.code = EAPIResponseCode.internal_error
             _res.error_msg = str(e)
+
         return _res.json_response()
 
     @router.post(
@@ -373,9 +395,6 @@ class APIUpload:
 
         # init resp
         _res = APIResponse()
-        access_token = Authorization
-
-        start_time = time.time()
 
         self.__logger.info('resumable_filename: %s' % request_payload.resumable_filename)
         # here I have to update the special character into NFC form
@@ -397,8 +416,7 @@ class APIUpload:
             self.__logger,
             request_payload,
             status_mgr,
-            access_token,
-            refresh_token,
+            session_id,
         )
 
         self.__logger.info('finalize_worker started')
@@ -406,7 +424,6 @@ class APIUpload:
         job_recorded = await status_mgr.set_status(EState.CHUNK_UPLOADED.name)
         _res.code = EAPIResponseCode.success
         _res.result = job_recorded
-        self.__logger.info('Combine chunks spent: %s' % (time.time() - start_time))
         return _res.json_response()
 
 
@@ -500,8 +517,7 @@ async def finalize_worker(
     logger,
     request_payload: OnSuccessUploadPOST,
     status_mgr: SessionJob,
-    access_token,
-    refresh_token,
+    session_id,
 ):
     """
     Summary:
@@ -543,6 +559,7 @@ async def finalize_worker(
     operator = request_payload.operator
     resumable_identifier = request_payload.resumable_identifier
     bucket = ('gr-' if namespace == 'greenroom' else 'core-') + project_code
+    obj_path = await run_in_threadpool(os.path.join, file_path, file_name)
     lock_key = await run_in_threadpool(os.path.join, bucket, file_path, file_name)
 
     temp_dir = await run_in_threadpool(os.path.join, ConfigClass.TEMP_BASE, resumable_identifier)
@@ -560,28 +577,22 @@ async def finalize_worker(
         # /a/b/c.txt that b is not exist in database. And will create it
         last_node = await folder_creation(project_code, operator, file_path, file_name)
 
-        # Upload task to combine file chunks and upload to nfs
-        chunk_paths = []
-        for x in range(1, request_payload.resumable_total_chunks + 1):
-            chunk_path = file_name + '_part_%03d' % x
-            chunk_path = await run_in_threadpool(os.path.join, temp_dir, chunk_path)
-            chunk_paths.append(chunk_path)
-
         target_head, target_tail = await run_in_threadpool(os.path.split, target_file_full_path)
-        temp_merged_file_full_path = await run_in_threadpool(os.path.join, temp_dir, file_name)
-        with open(temp_merged_file_full_path, 'ab') as temp_file:
-            for p in chunk_paths:
-                stored_chunk_file = open(p, 'rb')
-                temp_file.write(stored_chunk_file.read())
-                stored_chunk_file.close()
-                await run_in_threadpool(os.unlink, p)
-        logger.info('done with combinging chunks')
+        # fetch the temperory credentials from redis
+        redis_srv = SrvAioRedisSingleton()
+        credential_str = await redis_srv.get_by_key(session_id)
+        temp_credential = json.loads(credential_str)
 
-        # after use the minio the pipeline will also use the minio location
-        obj_path = await run_in_threadpool(os.path.join, file_path, file_name)
-        mc = await get_minio_client(access_token, refresh_token)
-        logger.info('Minio Connection Success')
-        version_id = await mc.fput_object(bucket, obj_path, temp_merged_file_full_path)
+        # get all chunk info like etag
+        chunks_info = await redis_srv.mget_by_prefix(resumable_identifier)
+        chunks_info = [json.loads(x) for x in chunks_info]
+        # send the message to combine the chunks on server side
+        boto3_client = await get_boto3_client(
+            ConfigClass.MINIO_ENDPOINT, temp_credentials=temp_credential, https=ConfigClass.MINIO_HTTPS
+        )
+        result = await boto3_client.combine_chunks(bucket, obj_path, resumable_identifier, chunks_info)
+        version_id = result.get('VersionId', '')
+        logger.info('done with combinging chunks')
 
         # create entity file data
         file_meta_mgr = SrvFileDataMgr(logger)
@@ -608,9 +619,13 @@ async def finalize_worker(
 
         # Store zip file preview in postgres
         try:
-            file_type = await run_in_threadpool(os.path.splitext, temp_merged_file_full_path)
+            file_type = await run_in_threadpool(os.path.splitext, file_name)
             if file_type[1] == '.zip':
-                archive_preview = await generate_archive_preview(temp_merged_file_full_path)
+                # new update and temperory solution here: if the file is zip
+                # then we download again to read the structure
+                await boto3_client.downlaod_object(bucket, obj_path, temp_dir + '/' + obj_path)
+
+                archive_preview = await generate_archive_preview(temp_dir + '/' + obj_path)
                 payload = {
                     'archive_preview': archive_preview,
                     'file_id': created_entity.get('id'),
@@ -653,7 +668,10 @@ async def finalize_worker(
 
     finally:
         await unlock_resource(lock_key, 'write')
-        shutil.rmtree(temp_dir)
+
+        # remove the zip preview if applies
+        if os.path.isdir(temp_dir):
+            shutil.rmtree(temp_dir)
 
 
 # TODO seem like we can merge following two functions

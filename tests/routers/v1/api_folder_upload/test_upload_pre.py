@@ -75,19 +75,13 @@ async def test_files_jobs_return_404_when_project_info_not_found(test_async_clie
 
 async def test_file_with_conflict_path_should_return_409(test_async_client, httpx_mock, mocker):
 
-    mocker.patch(
-        'common.ProjectClient.get',
-        return_value={'any': 'any', 'global_entity_id': 'fake_global_entity_id'}
-    )
+    mocker.patch('common.ProjectClient.get', return_value={'any': 'any', 'global_entity_id': 'fake_global_entity_id'})
 
     httpx_mock.add_response(
         method='GET',
         url='http://metadata_service/v1/items/search/?parent_path=&name=any&'
-            'container_code=any&archived=false&zone=1&recursive=false',
-        json={"result": [{
-            'resumable_filename': 'any',
-            'resumable_relative_path': "any"
-        }]},
+        'container_code=any&archived=false&zone=1&recursive=false',
+        json={'result': [{'resumable_filename': 'any', 'resumable_relative_path': 'any'}]},
         status_code=200,
     )
 
@@ -107,22 +101,22 @@ async def test_file_with_conflict_path_should_return_409(test_async_client, http
     }
 
 
-async def test_files_jobs_should_return_200_when_success(test_async_client, httpx_mock, create_job_folder, mocker):
+async def test_files_jobs_should_return_200_when_success(
+    test_async_client, httpx_mock, create_job_folder, mock_boto3, mocker
+):
 
-    mocker.patch(
-        'common.ProjectClient.get',
-        return_value={'any': 'any', 'global_entity_id': 'fake_global_entity_id'}
-    )
+    mocker.patch('common.ProjectClient.get', return_value={'any': 'any', 'global_entity_id': 'fake_global_entity_id'})
 
     httpx_mock.add_response(
         method='GET',
         url='http://metadata_service/v1/items/search/?parent_path=&name=any&'
-            'container_code=any&archived=false&zone=1&recursive=false',
-        json={"result": []},
+        'container_code=any&archived=false&zone=1&recursive=false',
+        json={'result': []},
         status_code=200,
     )
-    httpx_mock.add_response(method='POST', url='http://data_ops_util_service/v2/resource/lock/bulk',
-                            json={}, status_code=200)
+    httpx_mock.add_response(
+        method='POST', url='http://data_ops_util_service/v2/resource/lock/bulk', json={}, status_code=200
+    )
 
     response = await test_async_client.post(
         '/v1/files/jobs',
@@ -139,23 +133,21 @@ async def test_files_jobs_should_return_200_when_success(test_async_client, http
 
 
 async def test_files_jobs_type_AS_FOLDER_should_return_200_when_success(
-    test_async_client, httpx_mock, create_job_folder, mocker
+    test_async_client, httpx_mock, create_job_folder, mock_boto3, mocker
 ):
 
-    mocker.patch(
-        'common.ProjectClient.get',
-        return_value={'any': 'any', 'global_entity_id': 'fake_global_entity_id'}
-    )
+    mocker.patch('common.ProjectClient.get', return_value={'any': 'any', 'global_entity_id': 'fake_global_entity_id'})
 
     httpx_mock.add_response(
         method='GET',
         url='http://metadata_service/v1/items/search/?parent_path=admin&name=test&'
-            'container_code=any&archived=false&zone=1&recursive=false',
-        json={"result": []},
+        'container_code=any&archived=false&zone=1&recursive=false',
+        json={'result': []},
         status_code=200,
     )
-    httpx_mock.add_response(method='POST', url='http://data_ops_util_service/v2/resource/lock/bulk',
-                            json={}, status_code=200)
+    httpx_mock.add_response(
+        method='POST', url='http://data_ops_util_service/v2/resource/lock/bulk', json={}, status_code=200
+    )
 
     response = await test_async_client.post(
         '/v1/files/jobs',
@@ -165,7 +157,7 @@ async def test_files_jobs_type_AS_FOLDER_should_return_200_when_success(
             'operator': 'me',
             'job_type': 'AS_FOLDER',
             'data': [{'resumable_filename': 'any'}],
-            'current_folder_node': 'admin/test'
+            'current_folder_node': 'admin/test',
         },
     )
     assert response.status_code == 200
@@ -178,26 +170,21 @@ async def test_files_jobs_type_AS_FOLDER_should_return_200_when_success(
 
 
 async def test_files_jobs_adds_folder_should_return_200_when_success(
-    test_async_client,
-    httpx_mock,
-    create_job_folder,
-    mocker
+    test_async_client, httpx_mock, create_job_folder, mock_boto3, mocker
 ):
 
-    mocker.patch(
-        'common.ProjectClient.get',
-        return_value={'any': 'any', 'global_entity_id': 'fake_global_entity_id'}
-    )
+    mocker.patch('common.ProjectClient.get', return_value={'any': 'any', 'global_entity_id': 'fake_global_entity_id'})
 
     httpx_mock.add_response(
         method='GET',
         url='http://metadata_service/v1/items/search/?parent_path=admin&name=test&'
-            'container_code=any&archived=false&zone=1&recursive=false',
-        json={"result": []},
+        'container_code=any&archived=false&zone=1&recursive=false',
+        json={'result': []},
         status_code=200,
     )
-    httpx_mock.add_response(method='POST', url='http://data_ops_util_service/v2/resource/lock/bulk',
-                            json={}, status_code=200)
+    httpx_mock.add_response(
+        method='POST', url='http://data_ops_util_service/v2/resource/lock/bulk', json={}, status_code=200
+    )
 
     response = await test_async_client.post(
         '/v1/files/jobs',
@@ -207,7 +194,7 @@ async def test_files_jobs_adds_folder_should_return_200_when_success(
             'operator': 'me',
             'job_type': 'AS_FOLDER',
             'data': [{'resumable_filename': 'any', 'resumable_relative_path': 'tests/tmp'}],
-            'current_folder_node': 'admin/test'
+            'current_folder_node': 'admin/test',
         },
     )
     assert response.status_code == 200

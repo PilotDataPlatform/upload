@@ -104,7 +104,7 @@ def create_job_folder():
         shutil.rmtree(folder_path)
 
 
-@pytest.fixture
+@pytest.fixture()
 async def create_fake_job(monkeypatch):
     from app.commons.data_providers.redis import SrvAioRedisSingleton
 
@@ -130,8 +130,55 @@ async def create_fake_job(monkeypatch):
 
     monkeypatch.setattr(SrvAioRedisSingleton, 'mget_by_prefix', fake_return)
 
+    # mock the credential
+    fake_credentials = {
+        'AccessKeyId': 'AccessKeyId',
+        'SecretAccessKey': 'SecretAccessKey',
+        'SessionToken': 'SessionToken',
+    }
 
-@pytest.fixture
+    async def fake_return_c(x, y):
+        return bytes(json.dumps(fake_credentials), 'utf-8')
+
+    monkeypatch.setattr(SrvAioRedisSingleton, 'get_by_key', fake_return_c)
+
+
+@pytest.fixture()
+def mock_boto3(monkeypatch):
+    from common.object_storage_adaptor.boto3_client import Boto3Client
+
+    class FakeObject:
+        size = b'a'
+
+    http_response = HTTPResponse()
+    response = Response(status_code=200, json={})
+    response.raw = http_response
+    response.raw._fp = BytesIO(b'File like object')
+
+    async def fake_init_connection():
+        pass
+
+    async def fake_prepare_multipart_upload(x, y, z):
+        return 'fake_upload_id'
+
+    async def fake_part_upload(x, y, z, z1, z2, z3):
+        pass
+
+    async def fake_combine_chunks(x, y, z, z1, z2):
+        return {'VersionId': 'fake_version'}
+
+    async def fake_downlaod_object(x, y, z, z1):
+        return response
+
+    monkeypatch.setattr(Boto3Client, 'init_connection', lambda x: fake_init_connection())
+    monkeypatch.setattr(Boto3Client, 'prepare_multipart_upload', lambda x, y, z: fake_prepare_multipart_upload(x, y, z))
+    monkeypatch.setattr(Boto3Client, 'part_upload', lambda x, y, z, z1, z2, z3: fake_part_upload(x, y, z, z1, z2, z3))
+    monkeypatch.setattr(Boto3Client, 'combine_chunks', lambda x, y, z, z1, z2: fake_combine_chunks(x, y, z, z1, z2))
+    monkeypatch.setattr(Boto3Client, 'downlaod_object', lambda x, y, z, z1: fake_downlaod_object(x, y, z, z1))
+
+
+# REMOVE THIS AFTER PACKAGE IS UP
+@pytest.fixture()
 def mock_minio(monkeypatch):
     from app.commons.service_connection.minio_client import Minio
 

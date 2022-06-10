@@ -121,8 +121,8 @@ class SessionJob:
             'operator': self.operator,
             'progress': self.progress,
             'payload': {
-                "task_id": self.payload.get("task_id"),
-                "resumable_identifier": self.payload.get("resumable_identifier"),
+                'task_id': self.payload.get('task_id'),
+                'resumable_identifier': self.payload.get('resumable_identifier'),
             },
             'update_timestamp': str(round(time.time())),
         }
@@ -130,12 +130,7 @@ class SessionJob:
         return my_key, my_value, record
 
 
-async def get_fsm_object(
-    session_id: str,
-    project_code: str,
-    operator: str,
-    job_id: str = None
-) -> SessionJob:
+async def get_fsm_object(session_id: str, project_code: str, operator: str, job_id: str = None) -> SessionJob:
 
     fms_object = SessionJob(session_id, project_code, operator, job_id)
     if job_id:
@@ -152,13 +147,11 @@ async def session_job_set_status(
     project_code: str,
     operator: str,
     payload: str = None,
-    progress: int = 0
+    progress: int = 0,
 ) -> dict:
 
     srv_redis = SrvAioRedisSingleton()
-    my_key = 'dataaction:{}:Container:{}:{}:{}:{}:{}'.format(
-        session_id, job_id, action, project_code, operator, source
-    )
+    my_key = 'dataaction:{}:Container:{}:{}:{}:{}:{}'.format(session_id, job_id, action, project_code, operator, source)
 
     record = {
         'session_id': session_id,
@@ -178,11 +171,7 @@ async def session_job_set_status(
 
 
 async def session_job_get_status(
-    session_id: str,
-    job_id: str,
-    project_code: str,
-    action: str,
-    operator: str = None
+    session_id: str, job_id: str, project_code: str, action: str, operator: str = None
 ) -> list:
 
     srv_redis = SrvAioRedisSingleton()
