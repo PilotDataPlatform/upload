@@ -191,7 +191,9 @@ class APIUpload:
             status_mgr.add_payload('task_id', task_id)
 
             # prepare the presigned upload id
-            boto3_client = await get_boto3_client(ConfigClass.MINIO_ENDPOINT, token=Authorization)
+            boto3_client = await get_boto3_client(
+                ConfigClass.MINIO_ENDPOINT, token=Authorization, https=ConfigClass.MINIO_HTTPS
+            )
             bucket = ('gr-' if namespace == 'greenroom' else 'core-') + project_code
             file_keys = [x.resumable_relative_path + '/' + x.resumable_filename for x in request_payload.data]
             upload_ids = await boto3_client.prepare_multipart_upload(bucket, file_keys)
