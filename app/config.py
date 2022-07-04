@@ -72,6 +72,10 @@ class Settings(BaseSettings):
     REDIS_USER: str = 'default'
     REDIS_PASSWORD: str
 
+    # Kafka info
+    KAFKA_URL: str
+    KAFKA_ACTIVITY_TOPIC: str = 'items-activity-logs'
+
     OPEN_TELEMETRY_ENABLED: bool = False
     OPEN_TELEMETRY_HOST: str = '127.0.0.1'
     OPEN_TELEMETRY_PORT: int = 6831

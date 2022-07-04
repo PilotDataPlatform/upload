@@ -33,6 +33,7 @@ from app.commons.data_providers.redis_project_session_job import (
     SessionJob,
     get_fsm_object,
 )
+from app.commons.kafka_producer import get_kafka_producer
 from app.config import ConfigClass
 from app.models.base_models import APIResponse, EAPIResponseCode
 from app.models.file_data import SrvFileDataMgr
@@ -52,7 +53,7 @@ from app.resources.error_handler import (
     catch_internal,
     customized_error_template,
 )
-from app.resources.helpers import generate_archive_preview, update_file_operation_logs
+from app.resources.helpers import generate_archive_preview
 from app.resources.lock import (
     ResourceAlreadyInUsed,
     bulk_lock_operation,
@@ -578,6 +579,7 @@ async def finalize_worker(
 
         # create folder tree if not exist. The function is to check if
         # /a/b/c.txt that b is not exist in database. And will create it
+        logger.info('Start to create folder trees')
         last_node = await folder_creation(project_code, operator, file_path, file_name)
 
         target_head, target_tail = await run_in_threadpool(os.path.split, target_file_full_path)
@@ -587,6 +589,7 @@ async def finalize_worker(
         temp_credential = json.loads(credential_str)
 
         # get all chunk info like etag
+        logger.info('Start server side chunk combination')
         chunks_info = await redis_srv.mget_by_prefix(resumable_identifier)
         chunks_info = [json.loads(x) for x in chunks_info]
         # send the message to combine the chunks on server side
@@ -595,9 +598,9 @@ async def finalize_worker(
         )
         result = await boto3_client.combine_chunks(bucket, obj_path, resumable_identifier, chunks_info)
         version_id = result.get('VersionId', '')
-        logger.info('done with combinging chunks')
 
         # create entity file data
+        logger.info('start to create item in metadata service')
         file_meta_mgr = SrvFileDataMgr(logger)
         res_create_meta = await file_meta_mgr.create(
             operator,
@@ -616,9 +619,8 @@ async def finalize_worker(
             from_parents=request_payload.from_parents,
             parent_folder_geid=last_node.global_entity_id,
         )
-        logger.info('done with creating atlas record v2')
         # get created entity
-        created_entity = res_create_meta['result']
+        created_entity = res_create_meta.get('result')
 
         # Store zip file preview in postgres
         try:
@@ -644,12 +646,16 @@ async def finalize_worker(
         obj_path = (
             (ConfigClass.GREEN_ZONE_LABEL if namespace == 'greenroom' else ConfigClass.CORE_ZONE_LABEL) + '/' + obj_path
         )
-        await update_file_operation_logs(
-            operator,
-            obj_path,
-            project_code,
-            extra={'upload_message': request_payload.upload_message},
-        )
+        # await update_file_operation_logs(
+        #     operator,
+        #     obj_path,
+        #     project_code,
+        #     extra={'upload_message': request_payload.upload_message},
+        # )
+
+        # update full path to Greenroom/<display_path> for audit log
+        kp = await get_kafka_producer(ConfigClass.KAFKA_URL, ConfigClass.KAFKA_ACTIVITY_TOPIC)
+        await kp.create_activity_log(created_entity, 'metadata_items_activity.avsc', operator)
 
         await status_mgr.set_status(EState.FINALIZED.name)
 
