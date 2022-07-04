@@ -531,7 +531,7 @@ python-versions = "*"
 
 [[package]]
 name = "jmespath"
-version = "1.0.0"
+version = "1.0.1"
 description = "JSON Matching Expressions"
 category = "main"
 optional = false
@@ -748,7 +748,7 @@ pyparsing = ">=2.0.2,<3.0.5 || >3.0.5"
 
 [[package]]
 name = "pilot-platform-common"
-version = "0.0.31"
+version = "0.0.35"
 description = "Generates entity ID and connects with Vault (secret engine) to retrieve credentials"
 category = "main"
 optional = false
@@ -1264,7 +1264,7 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "7af9c0c915245d60f32728cd036576123c25d23c47c9bae13a197ac4a5294a8c"
+content-hash = "4e766265e3edd47740e5a00ea58f3a3206058a7c8c6fc946838ad323efd32726"
 
 [metadata.files]
 aioboto3 = [
@@ -1739,8 +1739,8 @@ iniconfig = [
     {file = "iniconfig-1.1.1.tar.gz", hash = "sha256:bc3af051d7d14b2ee5ef9969666def0cd1a000e121eaea580d4a313df4b37f32"},
 ]
 jmespath = [
-    {file = "jmespath-1.0.0-py3-none-any.whl", hash = "sha256:e8dcd576ed616f14ec02eed0005c85973b5890083313860136657e24784e4c04"},
-    {file = "jmespath-1.0.0.tar.gz", hash = "sha256:a490e280edd1f57d6de88636992d05b71e97d69a26a19f058ecf7d304474bf5e"},
+    {file = "jmespath-1.0.1-py3-none-any.whl", hash = "sha256:02e2e4cc71b5bcab88332eebf907519190dd9e6e82107fa7f83b1003a6252980"},
+    {file = "jmespath-1.0.1.tar.gz", hash = "sha256:90261b206d6defd58fdd5e85f478bf633a2901798906be2ad389150c5c60edbe"},
 ]
 mccabe = [
     {file = "mccabe-0.6.1-py2.py3-none-any.whl", hash = "sha256:ab8a6258860da4b6677da4bd2fe5dc2c659cff31b3ee4f7f5d64e79735b80d42"},
@@ -1868,8 +1868,8 @@ packaging = [
     {file = "packaging-21.3.tar.gz", hash = "sha256:dd47c42927d89ab911e606518907cc2d3a1f38bbd026385970643f9c5b8ecfeb"},
 ]
 pilot-platform-common = [
-    {file = "pilot-platform-common-0.0.31.tar.gz", hash = "sha256:a1f8a5964b521a6a34f8f6a50c923a2ff7573df4b87932a98ad7e7751f004ed6"},
-    {file = "pilot_platform_common-0.0.31-py3-none-any.whl", hash = "sha256:8af8544d0959d1e4b1249a24ffcf62bca771daaa5e27a198fd9bd5494bf03b0a"},
+    {file = "pilot-platform-common-0.0.35.tar.gz", hash = "sha256:f328043b71808676ec2381663b0e426a2a0eeee0f1aa0e1906bb73269d79f6a0"},
+    {file = "pilot_platform_common-0.0.35-py3-none-any.whl", hash = "sha256:ac66657fad46d927f731a4d582a6d1d4dc5586cc4577d923a8cf04bdfec984f0"},
 ]
 platformdirs = [
     {file = "platformdirs-2.5.2-py3-none-any.whl", hash = "sha256:027d8e83a2d7de06bbac4e5ef7e023c02b863d7ea5d079477e722bb41ab25788"},
