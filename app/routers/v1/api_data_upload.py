@@ -654,8 +654,10 @@ async def finalize_worker(
         # )
 
         # update full path to Greenroom/<display_path> for audit log
-        kp = await get_kafka_producer(ConfigClass.KAFKA_URL, ConfigClass.KAFKA_ACTIVITY_TOPIC)
-        await kp.create_activity_log(created_entity, 'metadata_items_activity.avsc', operator)
+        kp = await get_kafka_producer()
+        await kp.create_activity_log(
+            created_entity, 'metadata_items_activity.avsc', operator, ConfigClass.KAFKA_ACTIVITY_TOPIC
+        )
 
         await status_mgr.set_status(EState.FINALIZED.name)
 

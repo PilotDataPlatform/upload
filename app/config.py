@@ -74,7 +74,7 @@ class Settings(BaseSettings):
 
     # Kafka info
     KAFKA_URL: str
-    KAFKA_ACTIVITY_TOPIC: str = 'items-activity-logs'
+    KAFKA_ACTIVITY_TOPIC: str = 'metadata.items.activity'
 
     OPEN_TELEMETRY_ENABLED: bool = False
     OPEN_TELEMETRY_HOST: str = '127.0.0.1'
