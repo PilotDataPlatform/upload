@@ -70,6 +70,7 @@ async def test_upload_zip_should_allow_zip_preview(
     create_job_folder,
     create_fake_job,
     mock_boto3,
+    mock_kafka_producer,
     on_success_external_requests,
     mocker,
 ):
@@ -78,12 +79,6 @@ async def test_upload_zip_should_allow_zip_preview(
 
     mocker.patch('app.routers.v1.api_data_upload.folder_creation', return_value=FakeLastNode())
     httpx_mock.add_response(method='POST', url='http://data_ops_util_service/v1/archive', json={}, status_code=200)
-    httpx_mock.add_response(
-        method='POST',
-        url='http://PROVENANCE_SERVICE/v1/audit-logs',
-        json={},
-        status_code=200,
-    )
 
     response = await test_async_client.post(
         '/v1/files',
@@ -122,6 +117,7 @@ async def test_upload_any_file_should_return_200(
     create_job_folder,
     create_fake_job,
     mock_boto3,
+    mock_kafka_producer,
     on_success_external_requests,
     mocker,
 ):
@@ -129,12 +125,6 @@ async def test_upload_any_file_should_return_200(
         global_entity_id = 'fake_geid'
 
     mocker.patch('app.routers.v1.api_data_upload.folder_creation', return_value=FakeLastNode())
-    httpx_mock.add_response(
-        method='POST',
-        url='http://PROVENANCE_SERVICE/v1/audit-logs',
-        json={},
-        status_code=200,
-    )
 
     response = await test_async_client.post(
         '/v1/files',

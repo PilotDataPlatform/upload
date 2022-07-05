@@ -38,6 +38,7 @@ environ['DATA_OPS_UTIL'] = 'http://DATA_OPS_UTIL_SERVICE'
 environ['KEYCLOAK_URL'] = 'http://KEYCLOAK_URL'
 environ['PROJECT_SERVICE'] = 'http://PROJECT_SERVICE'
 environ['PROVENANCE_SERVICE'] = 'http://PROVENANCE_SERVICE'
+environ['KAFKA_URL'] = 'http://KAFKA_URL'
 
 environ['MINIO_OPENID_CLIENT'] = 'MINIO_OPENID_CLIENT'
 environ['MINIO_ENDPOINT'] = 'MINIO_ENDPOINT'
@@ -177,20 +178,25 @@ def mock_boto3(monkeypatch):
     monkeypatch.setattr(Boto3Client, 'downlaod_object', lambda x, y, z, z1: fake_downlaod_object(x, y, z, z1))
 
 
-# REMOVE THIS AFTER PACKAGE IS UP
-@pytest.fixture()
-def mock_minio(monkeypatch):
-    from app.commons.service_connection.minio_client import Minio
+@pytest.fixture
+def mock_kafka_producer(monkeypatch):
+    from app.commons.kafka_producer import KakfaProducer
 
-    class FakeObject:
-        size = b'a'
+    async def fake_init_connection():
+        pass
 
-    http_response = HTTPResponse()
-    response = Response(status_code=200)
-    response.raw = http_response
-    response.raw._fp = BytesIO(b'File like object')
+    async def fake_send_message(x, y, z):
+        pass
 
-    monkeypatch.setattr(Minio, 'stat_object', lambda x, y, z: FakeObject())
-    monkeypatch.setattr(Minio, 'get_object', lambda x, y, z: http_response)
-    monkeypatch.setattr(Minio, 'list_buckets', lambda x: [])
-    monkeypatch.setattr(Minio, 'fget_object', lambda *x: [])
+    async def fake_validate_message(x, y, z):
+        pass
+
+    async def fake_create_activity_log(x, y, z, z1, z2):
+        pass
+
+    monkeypatch.setattr(KakfaProducer, 'init_connection', lambda x: fake_init_connection())
+    monkeypatch.setattr(KakfaProducer, '_send_message', lambda x, y, z: fake_send_message(x, y, z))
+    monkeypatch.setattr(KakfaProducer, '_validate_message', lambda x, y, z: fake_validate_message(x, y, z))
+    monkeypatch.setattr(
+        KakfaProducer, 'create_activity_log', lambda x, y, z, z1, z2: fake_create_activity_log(x, y, z, z1, z2)
+    )
