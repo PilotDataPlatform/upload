@@ -592,6 +592,7 @@ async def finalize_worker(
         logger.info('Start server side chunk combination')
         chunks_info = await redis_srv.mget_by_prefix(resumable_identifier)
         chunks_info = [json.loads(x) for x in chunks_info]
+        chunks_info = sorted(chunks_info, key=lambda d: d.get('PartNumber'))
         # send the message to combine the chunks on server side
         boto3_client = await get_boto3_client(
             ConfigClass.MINIO_ENDPOINT, temp_credentials=temp_credential, https=ConfigClass.MINIO_HTTPS
