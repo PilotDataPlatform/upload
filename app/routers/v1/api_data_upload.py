@@ -22,7 +22,7 @@ from typing import Optional
 
 import httpx
 from common import GEIDClient, LoggerFactory, ProjectClient, ProjectNotFoundException
-from common.object_storage_adaptor.boto3_client import TokenExpired, get_boto3_client
+from common.object_storage_adaptor.boto3_client import TokenError, get_boto3_client
 from fastapi import APIRouter, BackgroundTasks, File, Form, Header, UploadFile
 from fastapi.concurrency import run_in_threadpool
 from fastapi_utils import cbv
@@ -228,7 +228,7 @@ class APIUpload:
 
             _res.result = job_list
 
-        except TokenExpired as e:
+        except TokenError as e:
             _res.error_msg = str(e)
             _res.code = EAPIResponseCode.bad_request
 
