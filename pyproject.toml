@@ -28,9 +28,9 @@ aioredis = "^2.0.1"
 aiofiles = "^0.8.0"
 pytest-mock = "^3.7.0"
 pre-commit = "^2.19.0"
-pilot-platform-common = "^0.0.35"
 aiokafka = "^0.7.2"
 fastavro = "^1.5.2"
+pilot-platform-common = "0.0.39"
 
 [tool.poetry.dev-dependencies]
 pytest = "6.2.5"

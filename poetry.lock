@@ -787,7 +787,7 @@ pyparsing = ">=2.0.2,<3.0.5 || >3.0.5"
 
 [[package]]
 name = "pilot-platform-common"
-version = "0.0.35"
+version = "0.0.39"
 description = "Generates entity ID and connects with Vault (secret engine) to retrieve credentials"
 category = "main"
 optional = false
@@ -799,6 +799,7 @@ aioredis = ">=2.0.0"
 httpx = "0.23.0"
 minio = "7.1.8"
 python-dotenv = "0.19.1"
+python-json-logger = ">=0.1.11"
 xmltodict = "0.13.0"
 
 [[package]]
@@ -1303,7 +1304,7 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "e1ed6236b31d225d82f8fa46efc1a240381ac2075304b39de8adb15f3671a41d"
+content-hash = "a40930d3f46b2690bbe159d514102b9d753b42ec272827d3d6ea4c0e436bc774"
 
 [metadata.files]
 aioboto3 = [
@@ -1952,10 +1953,7 @@ packaging = [
     {file = "packaging-21.3-py3-none-any.whl", hash = "sha256:ef103e05f519cdc783ae24ea4e2e0f508a9c99b2d4969652eed6a2e1ea5bd522"},
     {file = "packaging-21.3.tar.gz", hash = "sha256:dd47c42927d89ab911e606518907cc2d3a1f38bbd026385970643f9c5b8ecfeb"},
 ]
-pilot-platform-common = [
-    {file = "pilot-platform-common-0.0.35.tar.gz", hash = "sha256:f328043b71808676ec2381663b0e426a2a0eeee0f1aa0e1906bb73269d79f6a0"},
-    {file = "pilot_platform_common-0.0.35-py3-none-any.whl", hash = "sha256:ac66657fad46d927f731a4d582a6d1d4dc5586cc4577d923a8cf04bdfec984f0"},
-]
+pilot-platform-common = []
 platformdirs = [
     {file = "platformdirs-2.5.2-py3-none-any.whl", hash = "sha256:027d8e83a2d7de06bbac4e5ef7e023c02b863d7ea5d079477e722bb41ab25788"},
     {file = "platformdirs-2.5.2.tar.gz", hash = "sha256:58c8abb07dcb441e6ee4b11d8df0ac856038f944ab98b7be6b27b2a3c7feef19"},
