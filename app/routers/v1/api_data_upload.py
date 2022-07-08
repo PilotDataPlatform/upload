@@ -319,6 +319,8 @@ class APIUpload:
         # for the bug detail. Please check the ticket 2244
         resumable_filename = ud.normalize('NFC', resumable_filename)
 
+        self.__logger.info('Uploading file %s chunk %s', resumable_filename, resumable_chunk_number)
+
         redis_srv = SrvAioRedisSingleton()
         credential_str = await redis_srv.get_by_key(session_id)
         temp_credential = json.loads(credential_str)
@@ -336,6 +338,8 @@ class APIUpload:
             etag_info = await boto3_client.part_upload(
                 bucket, file_key, resumable_identifier, resumable_chunk_number, file_content
             )
+            self.__logger.info('finish the chunk upload: %s', json.dumps(etag_info))
+
             # and then collect the etag for third api
             redis_key = '%s:%s' % (resumable_identifier, resumable_chunk_number)
             await redis_srv.set_by_key(redis_key, json.dumps(etag_info))
@@ -343,6 +347,7 @@ class APIUpload:
             _res.code = EAPIResponseCode.success
             _res.result = {'msg': 'Succeed'}
         except Exception as e:
+            self.__logger.error('Fail to upload chunks: %s', json.dumps(etag_info))
             # get the exist status manager that created in
             # pre upload api.And set the job status/return message
             status_mgr = await get_fsm_object(
