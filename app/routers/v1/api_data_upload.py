@@ -347,7 +347,8 @@ class APIUpload:
             _res.code = EAPIResponseCode.success
             _res.result = {'msg': 'Succeed'}
         except Exception as e:
-            self.__logger.error('Fail to upload chunks: %s', json.dumps(etag_info))
+            error_message = str(e)
+            self.__logger.error('Fail to upload chunks: %s', error_message)
             # get the exist status manager that created in
             # pre upload api.And set the job status/return message
             status_mgr = await get_fsm_object(
@@ -360,7 +361,7 @@ class APIUpload:
             await status_mgr.set_status(EState.TERMINATED.name)
 
             _res.code = EAPIResponseCode.internal_error
-            _res.error_msg = str(e)
+            _res.error_msg = error_message
 
         return _res.json_response()
 
