@@ -334,7 +334,9 @@ class APIUpload:
             file_key = resumable_relative_path + '/' + resumable_filename
 
             # dirctly proxy to the server
+            self.__logger.info('Start to read the chunks')
             file_content = await chunk_data.read()
+            self.__logger.info('Chunk size is %s', len(file_content))
             etag_info = await boto3_client.part_upload(
                 bucket, file_key, resumable_identifier, resumable_chunk_number, file_content
             )
