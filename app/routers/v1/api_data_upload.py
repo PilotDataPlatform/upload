@@ -98,14 +98,22 @@ class APIUpload:
 
     def _connect_to_object_storage(self):
         loop = asyncio.new_event_loop()
-        boto3_client = loop.run_until_complete(
-            get_boto3_client(
-                ConfigClass.MINIO_ENDPOINT,
-                access_key=ConfigClass.MINIO_ACCESS_KEY,
-                secret_key=ConfigClass.MINIO_SECRET_KEY,
-                https=ConfigClass.MINIO_HTTPS,
+
+        self.__logger.info('Initialize the boto3 client')
+        try:
+            boto3_client = loop.run_until_complete(
+                get_boto3_client(
+                    ConfigClass.MINIO_ENDPOINT,
+                    access_key=ConfigClass.MINIO_ACCESS_KEY,
+                    secret_key=ConfigClass.MINIO_SECRET_KEY,
+                    https=ConfigClass.MINIO_HTTPS,
+                )
             )
-        )
+        except Exception as e:
+            error_msg = str(e)
+            self.__logger.error('Fail to create connection with boto3: %s', error_msg)
+            raise e
+
         loop.close()
         return boto3_client
 
