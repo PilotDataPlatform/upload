@@ -30,7 +30,7 @@ pytest-mock = "^3.7.0"
 pre-commit = "^2.19.0"
 aiokafka = "^0.7.2"
 fastavro = "^1.5.2"
-pilot-platform-common = "0.0.39"
+pilot-platform-common = "^0.0.40"
 
 [tool.poetry.dev-dependencies]
 pytest = "6.2.5"
