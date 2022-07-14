@@ -13,6 +13,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import asyncio
 import json
 import os
 import shutil
@@ -93,6 +94,28 @@ class APIUpload:
         self.__logger = LoggerFactory('api_data_upload').get_logger()
         self.geid_client = GEIDClient()
         self.project_client = ProjectClient(ConfigClass.PROJECT_SERVICE, ConfigClass.REDIS_URL)
+        self.boto3_client = self._connect_to_object_storage()
+
+    def _connect_to_object_storage(self):
+        loop = asyncio.new_event_loop()
+
+        self.__logger.info('Initialize the boto3 client')
+        try:
+            boto3_client = loop.run_until_complete(
+                get_boto3_client(
+                    ConfigClass.MINIO_ENDPOINT,
+                    access_key=ConfigClass.MINIO_ACCESS_KEY,
+                    secret_key=ConfigClass.MINIO_SECRET_KEY,
+                    https=ConfigClass.MINIO_HTTPS,
+                )
+            )
+        except Exception as e:
+            error_msg = str(e)
+            self.__logger.error('Fail to create connection with boto3: %s', error_msg)
+            raise e
+
+        loop.close()
+        return boto3_client
 
     @router.post(
         '/files/jobs',
@@ -192,12 +215,9 @@ class APIUpload:
             status_mgr.add_payload('task_id', task_id)
 
             # prepare the presigned upload id
-            boto3_client = await get_boto3_client(
-                ConfigClass.MINIO_ENDPOINT, token=Authorization, https=ConfigClass.MINIO_HTTPS
-            )
             bucket = ('gr-' if namespace == 'greenroom' else 'core-') + project_code
             file_keys = [x.resumable_relative_path + '/' + x.resumable_filename for x in request_payload.data]
-            upload_ids = await boto3_client.prepare_multipart_upload(bucket, file_keys)
+            upload_ids = await self.boto3_client.prepare_multipart_upload(bucket, file_keys)
 
             # then prepare the job for EACH of the uploading files
             job_list, lock_keys = [], []
@@ -218,9 +238,6 @@ class APIUpload:
                 # also generate the file lock key for batch lock operation
                 lock_key = await run_in_threadpool(os.path.join, bucket, file_key)
                 lock_keys.append(lock_key)
-
-            # also cache up the temperary credentials into redis
-            await run_in_threadpool(redis_pipeline.set, session_id, json.dumps(boto3_client.temp_credentials))
 
             await redis_pipeline.execute()
             # lock all the files to prevent other user uploading same name
@@ -320,16 +337,9 @@ class APIUpload:
         resumable_filename = ud.normalize('NFC', resumable_filename)
 
         self.__logger.info('Uploading file %s chunk %s', resumable_filename, resumable_chunk_number)
-
         redis_srv = SrvAioRedisSingleton()
-        credential_str = await redis_srv.get_by_key(session_id)
-        temp_credential = json.loads(credential_str)
-
         # using the boto3 to upload chunks directly into minio server
         try:
-            boto3_client = await get_boto3_client(
-                ConfigClass.MINIO_ENDPOINT, temp_credentials=temp_credential, https=ConfigClass.MINIO_HTTPS
-            )
             bucket = ('gr-' if ConfigClass.namespace == 'greenroom' else 'core-') + project_code
             file_key = resumable_relative_path + '/' + resumable_filename
 
@@ -337,7 +347,7 @@ class APIUpload:
             self.__logger.info('Start to read the chunks')
             file_content = await chunk_data.read()
             self.__logger.info('Chunk size is %s', len(file_content))
-            etag_info = await boto3_client.part_upload(
+            etag_info = await self.boto3_client.part_upload(
                 bucket, file_key, resumable_identifier, resumable_chunk_number, file_content
             )
             self.__logger.info('finish the chunk upload: %s', json.dumps(etag_info))
@@ -428,6 +438,7 @@ class APIUpload:
             self.__logger,
             request_payload,
             status_mgr,
+            self.boto3_client,
             session_id,
         )
 
@@ -529,6 +540,7 @@ async def finalize_worker(
     logger,
     request_payload: OnSuccessUploadPOST,
     status_mgr: SessionJob,
+    boto3_client,
     session_id,
 ):
     """
@@ -591,20 +603,15 @@ async def finalize_worker(
         last_node = await folder_creation(project_code, operator, file_path, file_name)
 
         target_head, target_tail = await run_in_threadpool(os.path.split, target_file_full_path)
-        # fetch the temperory credentials from redis
-        redis_srv = SrvAioRedisSingleton()
-        credential_str = await redis_srv.get_by_key(session_id)
-        temp_credential = json.loads(credential_str)
 
+        redis_srv = SrvAioRedisSingleton()
         # get all chunk info like etag
         logger.info('Start server side chunk combination')
         chunks_info = await redis_srv.mget_by_prefix(resumable_identifier)
         chunks_info = [json.loads(x) for x in chunks_info]
         chunks_info = sorted(chunks_info, key=lambda d: d.get('PartNumber'))
+
         # send the message to combine the chunks on server side
-        boto3_client = await get_boto3_client(
-            ConfigClass.MINIO_ENDPOINT, temp_credentials=temp_credential, https=ConfigClass.MINIO_HTTPS
-        )
         result = await boto3_client.combine_chunks(bucket, obj_path, resumable_identifier, chunks_info)
         version_id = result.get('VersionId', '')
 
@@ -655,12 +662,6 @@ async def finalize_worker(
         obj_path = (
             (ConfigClass.GREEN_ZONE_LABEL if namespace == 'greenroom' else ConfigClass.CORE_ZONE_LABEL) + '/' + obj_path
         )
-        # await update_file_operation_logs(
-        #     operator,
-        #     obj_path,
-        #     project_code,
-        #     extra={'upload_message': request_payload.upload_message},
-        # )
 
         # update full path to Greenroom/<display_path> for audit log
         kp = await get_kafka_producer()
