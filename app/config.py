@@ -42,7 +42,7 @@ class Settings(BaseSettings):
     port: int = 5079
     host: str = '127.0.0.1'
     env: str = ''
-    namespace: str = ''
+    namespace: str
 
     # disk mounts
     ROOT_PATH: str
