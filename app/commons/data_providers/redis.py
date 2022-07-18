@@ -44,6 +44,9 @@ class SrvAioRedisSingleton:
             self.__instance = REDIS_INSTANCE
             _logger.info('[SUCCEED] SrvAioRedisSingleton Connection initialized.')
 
+    async def ping(self):
+        return await self.__instance.ping()
+
     async def get_pipeline(self):
         return await self.__instance.pipeline()
 
