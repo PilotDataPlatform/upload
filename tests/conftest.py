@@ -28,6 +28,8 @@ from httpx import Response
 from starlette.config import environ
 from urllib3 import HTTPResponse
 
+environ['namespace'] = 'dev'
+
 environ['CONFIG_CENTER_ENABLED'] = 'false'
 environ['CORE_ZONE_LABEL'] = 'Core'
 environ['GREEN_ZONE_LABEL'] = 'Greenroom'
