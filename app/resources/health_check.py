@@ -16,6 +16,7 @@
 import httpx
 
 from app.commons.data_providers.redis import SrvAioRedisSingleton
+from app.commons.kafka_producer import get_kafka_producer
 from app.config import ConfigClass
 
 
@@ -47,7 +48,7 @@ async def check_minio() -> bool:
         For more infomation, check document:
         https://github.com/minio/minio/blob/master/docs/metrics/healthcheck/README.md
     Return:
-        - {"Redis": status}
+        - {"Minio": status}
     """
 
     http_protocal = 'https://' if ConfigClass.S3_INTERNAL_HTTPS else 'http://'
@@ -63,3 +64,20 @@ async def check_minio() -> bool:
         return {'Minio': 'Fail with error: %s' % (str(e))}
 
     return {'Minio': 'Online'}
+
+
+async def check_kafka():
+    """
+    Summary:
+        the function is to check if kafka is available.
+        this will just check if we successfully init the
+        kafka producer
+    Return:
+        - {"Kafka": status}
+    """
+
+    kafka_connection = await get_kafka_producer()
+    if kafka_connection.connected is False:
+        return {'Kafka': 'Unavailable'}
+
+    return {'Kafka': 'Online'}
