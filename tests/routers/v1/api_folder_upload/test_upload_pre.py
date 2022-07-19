@@ -114,9 +114,7 @@ async def test_files_jobs_should_return_200_when_success(
         json={'result': []},
         status_code=200,
     )
-    httpx_mock.add_response(
-        method='POST', url='http://dataops_service_service/v2/resource/lock/bulk', json={}, status_code=200
-    )
+    httpx_mock.add_response(method='POST', url='http://DATAOPS_SERVICE/v2/resource/lock/bulk', json={}, status_code=200)
 
     response = await test_async_client.post(
         '/v1/files/jobs',
@@ -145,9 +143,7 @@ async def test_files_jobs_type_AS_FOLDER_should_return_200_when_success(
         json={'result': []},
         status_code=200,
     )
-    httpx_mock.add_response(
-        method='POST', url='http://dataops_service_service/v2/resource/lock/bulk', json={}, status_code=200
-    )
+    httpx_mock.add_response(method='POST', url='http://DATAOPS_SERVICE/v2/resource/lock/bulk', json={}, status_code=200)
 
     response = await test_async_client.post(
         '/v1/files/jobs',
@@ -182,9 +178,7 @@ async def test_files_jobs_adds_folder_should_return_200_when_success(
         json={'result': []},
         status_code=200,
     )
-    httpx_mock.add_response(
-        method='POST', url='http://dataops_service_service/v2/resource/lock/bulk', json={}, status_code=200
-    )
+    httpx_mock.add_response(method='POST', url='http://DATAOPS_SERVICE/v2/resource/lock/bulk', json={}, status_code=200)
 
     response = await test_async_client.post(
         '/v1/files/jobs',

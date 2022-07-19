@@ -28,28 +28,6 @@ from httpx import Response
 from starlette.config import environ
 from urllib3 import HTTPResponse
 
-environ['namespace'] = 'dev'
-
-environ['CONFIG_CENTER_ENABLED'] = 'false'
-environ['CORE_ZONE_LABEL'] = 'Core'
-environ['GREEN_ZONE_LABEL'] = 'Greenroom'
-
-environ['METADATA_SERVICE'] = 'http://METADATA_SERVICE'
-environ['DATAOPS_SERVICE'] = 'http://dataops_service_SERVICE'
-environ['PROJECT_SERVICE'] = 'http://PROJECT_SERVICE'
-environ['KAFKA_URL'] = 'http://KAFKA_URL'
-
-environ['MINIO_ENDPOINT'] = 'MINIO_ENDPOINT'
-environ['MINIO_HTTPS'] = 'true'
-environ['MINIO_ACCESS_KEY'] = 'MINIO_ACCESS_KEY'
-environ['MINIO_SECRET_KEY'] = 'MINIO_SECRET_KEY'
-
-environ['REDIS_HOST'] = '127.0.0.1'
-environ['REDIS_PORT'] = '6379'
-environ['REDIS_DB'] = '0'
-environ['REDIS_PASSWORD'] = ''
-environ['ROOT_PATH'] = 'tests/'
-
 
 @pytest.fixture(scope='session')
 def event_loop(request):
