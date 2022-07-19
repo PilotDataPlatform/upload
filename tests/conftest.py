@@ -34,9 +34,8 @@ environ['CONFIG_CENTER_ENABLED'] = 'false'
 environ['CORE_ZONE_LABEL'] = 'Core'
 environ['GREEN_ZONE_LABEL'] = 'Greenroom'
 
-environ['ENTITYINFO_SERVICE'] = 'http://ENTITYINFO_SERVICE'
 environ['METADATA_SERVICE'] = 'http://METADATA_SERVICE'
-environ['DATA_OPS_UTIL'] = 'http://DATA_OPS_UTIL_SERVICE'
+environ['DATAOPS_SERVICE'] = 'http://dataops_service_SERVICE'
 environ['PROJECT_SERVICE'] = 'http://PROJECT_SERVICE'
 environ['KAFKA_URL'] = 'http://KAFKA_URL'
 

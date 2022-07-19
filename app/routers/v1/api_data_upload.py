@@ -652,7 +652,7 @@ async def finalize_worker(
                     'file_id': created_entity.get('id'),
                 }
                 async with httpx.AsyncClient() as client:
-                    await client.post(ConfigClass.DATA_OPS_UTIL + 'archive', json=payload, timeout=3600)
+                    await client.post(ConfigClass.DATAOPS_SERVICE + 'archive', json=payload, timeout=3600)
         except Exception as e:
             geid = created_entity.get('id')
             logger.error(f'Error adding file preview for {geid}: {str(e)}')

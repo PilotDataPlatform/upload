@@ -21,7 +21,7 @@ from app.config import ConfigClass
 class SrvFileDataMgr:
     """Service for File Data Entity INFO Manager."""
 
-    base_url = ConfigClass.DATA_OPS_UTIL
+    base_url = ConfigClass.DATAOPS_SERVICE
 
     def __init__(self, logger):
         self.logger = logger

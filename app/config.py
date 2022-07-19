@@ -50,8 +50,7 @@ class Settings(BaseSettings):
     GREEN_ZONE_LABEL: str
 
     # microservices
-    ENTITYINFO_SERVICE: str
-    DATA_OPS_UTIL: str
+    DATAOPS_SERVICE: str
     METADATA_SERVICE: str
     PROJECT_SERVICE: str
 
@@ -91,10 +90,8 @@ class Settings(BaseSettings):
         self.disk_namespace = self.namespace
 
         # services
-        self.ENTITYINFO_SERVICE += '/v1/'
-
-        self.DATA_OPS_UT_V2 = self.DATA_OPS_UTIL + '/v2/'
-        self.DATA_OPS_UTIL += '/v1/'
+        self.DATAOPS_SERVICE_V2 = self.DATAOPS_SERVICE + '/v2/'
+        self.DATAOPS_SERVICE = self.DATAOPS_SERVICE + '/v1/'
         self.METADATA_SERVICE = self.METADATA_SERVICE + '/v1/'
 
         # minio
