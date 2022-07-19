@@ -55,10 +55,10 @@ class Settings(BaseSettings):
     PROJECT_SERVICE: str
 
     # minio
-    MINIO_ENDPOINT: str
-    MINIO_HTTPS: bool = False
-    MINIO_ACCESS_KEY: str
-    MINIO_SECRET_KEY: str
+    S3_INTERNAL: str
+    S3_INTERNAL_HTTPS: bool = False
+    S3_ACCESS_KEY: str
+    S3_SECRET_KEY: str
 
     # Redis Service
     REDIS_HOST: str

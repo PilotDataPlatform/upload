@@ -103,10 +103,10 @@ class APIUpload:
         try:
             boto3_client = loop.run_until_complete(
                 get_boto3_client(
-                    ConfigClass.MINIO_ENDPOINT,
-                    access_key=ConfigClass.MINIO_ACCESS_KEY,
-                    secret_key=ConfigClass.MINIO_SECRET_KEY,
-                    https=ConfigClass.MINIO_HTTPS,
+                    ConfigClass.S3_INTERNAL,
+                    access_key=ConfigClass.S3_ACCESS_KEY,
+                    secret_key=ConfigClass.S3_SECRET_KEY,
+                    https=ConfigClass.S3_INTERNAL_HTTPS,
                 )
             )
         except Exception as e:

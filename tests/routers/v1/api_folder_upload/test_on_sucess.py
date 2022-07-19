@@ -93,7 +93,7 @@ async def test_upload_zip_should_allow_zip_preview(
             'resumable_total_size': 10,
         },
     )
-    # assert fake_providers_urlopen.call_args[0][2].startswith('https://MINIO_ENDPOINT')
+    # assert fake_providers_urlopen.call_args[0][2].startswith('https://S3_INTERNAL')
 
     assert response.status_code == 200
     result = response.json()['result']
@@ -139,7 +139,7 @@ async def test_upload_any_file_should_return_200(
             'resumable_total_size': 10,
         },
     )
-    # assert fake_providers_urlopen.call_args[0][2].startswith('https://MINIO_ENDPOINT')
+    # assert fake_providers_urlopen.call_args[0][2].startswith('https://S3_INTERNAL')
 
     assert response.status_code == 200
     result = response.json()['result']
