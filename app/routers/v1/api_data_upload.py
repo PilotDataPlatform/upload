@@ -103,10 +103,10 @@ class APIUpload:
         try:
             boto3_client = loop.run_until_complete(
                 get_boto3_client(
-                    ConfigClass.MINIO_ENDPOINT,
-                    access_key=ConfigClass.MINIO_ACCESS_KEY,
-                    secret_key=ConfigClass.MINIO_SECRET_KEY,
-                    https=ConfigClass.MINIO_HTTPS,
+                    ConfigClass.S3_INTERNAL,
+                    access_key=ConfigClass.S3_ACCESS_KEY,
+                    secret_key=ConfigClass.S3_SECRET_KEY,
+                    https=ConfigClass.S3_INTERNAL_HTTPS,
                 )
             )
         except Exception as e:
@@ -652,7 +652,7 @@ async def finalize_worker(
                     'file_id': created_entity.get('id'),
                 }
                 async with httpx.AsyncClient() as client:
-                    await client.post(ConfigClass.DATA_OPS_UTIL + 'archive', json=payload, timeout=3600)
+                    await client.post(ConfigClass.DATAOPS_SERVICE + 'archive', json=payload, timeout=3600)
         except Exception as e:
             geid = created_entity.get('id')
             logger.error(f'Error adding file preview for {geid}: {str(e)}')

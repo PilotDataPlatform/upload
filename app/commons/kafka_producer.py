@@ -29,6 +29,7 @@ class KakfaProducer:
     producer = None
     schema_path = 'app/commons'
     logger = LoggerFactory('KakfaProducer').get_logger()
+    connected = False
 
     async def init_connection(self) -> None:
         '''
@@ -42,9 +43,11 @@ class KakfaProducer:
             try:
                 # Get cluster layout and initial topic/partition leadership information
                 await self.producer.start()
+                self.connected = True
             except Exception as e:
                 self.logger.error('Fail to start kafka producer:%s' % (str(e)))
-                raise e
+
+        return
 
     async def close_connection(self) -> None:
         '''

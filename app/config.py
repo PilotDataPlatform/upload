@@ -37,12 +37,12 @@ def load_vault_settings(settings: BaseSettings) -> Dict[str, Any]:
 class Settings(BaseSettings):
     """Store service configuration settings."""
 
-    APP_NAME: str = 'service_upload'
+    APP_NAME: str = 'UPLOAD_SERVICE'
     VERSION: str = '0.2.3'
     port: int = 5079
     host: str = '127.0.0.1'
     env: str = ''
-    namespace: str = ''
+    namespace: str
 
     # disk mounts
     ROOT_PATH: str
@@ -50,20 +50,15 @@ class Settings(BaseSettings):
     GREEN_ZONE_LABEL: str
 
     # microservices
-    ENTITYINFO_SERVICE: str
-    PROVENANCE_SERVICE: str
-    DATA_OPS_UTIL: str
-    KEYCLOAK_MINIO_SECRET: str
+    DATAOPS_SERVICE: str
     METADATA_SERVICE: str
     PROJECT_SERVICE: str
 
     # minio
-    MINIO_OPENID_CLIENT: str
-    MINIO_ENDPOINT: str
-    MINIO_HTTPS: bool = False
-    KEYCLOAK_URL: str
-    MINIO_ACCESS_KEY: str
-    MINIO_SECRET_KEY: str
+    S3_INTERNAL: str
+    S3_INTERNAL_HTTPS: bool = False
+    S3_ACCESS_KEY: str
+    S3_SECRET_KEY: str
 
     # Redis Service
     REDIS_HOST: str
@@ -95,12 +90,9 @@ class Settings(BaseSettings):
         self.disk_namespace = self.namespace
 
         # services
-        self.ENTITYINFO_SERVICE += '/v1/'
-
-        self.DATA_OPS_UT_V2 = self.DATA_OPS_UTIL + '/v2/'
-        self.DATA_OPS_UTIL += '/v1/'
+        self.DATAOPS_SERVICE_V2 = self.DATAOPS_SERVICE + '/v2/'
+        self.DATAOPS_SERVICE = self.DATAOPS_SERVICE + '/v1/'
         self.METADATA_SERVICE = self.METADATA_SERVICE + '/v1/'
-        self.PROVENANCE_SERVICE = self.PROVENANCE_SERVICE + '/v1/'
 
         # minio
         self.MINIO_TMP_PATH = self.ROOT_PATH + '/tmp/'

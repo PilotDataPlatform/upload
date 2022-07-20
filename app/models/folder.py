@@ -210,27 +210,3 @@ class FolderNode:
         cache.update({obj_path: self.__dict__})
 
         return self.__dict__
-
-
-async def batch_create_4j_foldernodes(folders: list) -> httpx.Response:
-    """
-    Summary:
-        The function will call the entity info service to batch create
-        the folder node tree for folder uploading.
-    Parameters:
-        - folders(list): The list of the folder nodes that should be
-            created for the upload.
-    Return:
-        - http response
-    """
-    url = ConfigClass.ENTITYINFO_SERVICE + 'folders/batch'
-    batch_create_payload = {
-        'payload': folders,
-        'zone': ConfigClass.GREEN_ZONE_LABEL if ConfigClass.namespace == 'greenroom' else ConfigClass.CORE_ZONE_LABEL,
-        'link_container': False,
-    }
-    async with httpx.AsyncClient() as client:
-        saved = await client.post(url, json=batch_create_payload, timeout=3600)
-        if saved.status_code != 200:
-            raise Exception('Fail to create folder %s' % (saved.__dict__))
-    return saved

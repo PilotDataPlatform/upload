@@ -24,13 +24,13 @@ pytestmark = pytest.mark.asyncio  # set the mark to all tests in this file.
 async def on_success_external_requests(httpx_mock):
     httpx_mock.add_response(
         method='POST',
-        url='http://data_ops_util_service/v1/filedata/',
+        url='http://DATAOPS_SERVICE/v1/filedata/',
         json={'result': {'global_entity_id': 'fake_global_entity_id'}},
         status_code=200,
     )
     httpx_mock.add_response(
         method='DELETE',
-        url='http://data_ops_util_service/v2/resource/lock/',
+        url='http://DATAOPS_SERVICE/v2/resource/lock/',
         json={},
         status_code=200,
     )
@@ -78,7 +78,7 @@ async def test_upload_zip_should_allow_zip_preview(
         global_entity_id = 'fake_geid'
 
     mocker.patch('app.routers.v1.api_data_upload.folder_creation', return_value=FakeLastNode())
-    httpx_mock.add_response(method='POST', url='http://data_ops_util_service/v1/archive', json={}, status_code=200)
+    httpx_mock.add_response(method='POST', url='http://DATAOPS_SERVICE/v1/archive', json={}, status_code=200)
 
     response = await test_async_client.post(
         '/v1/files',
@@ -93,7 +93,7 @@ async def test_upload_zip_should_allow_zip_preview(
             'resumable_total_size': 10,
         },
     )
-    # assert fake_providers_urlopen.call_args[0][2].startswith('https://MINIO_ENDPOINT')
+    # assert fake_providers_urlopen.call_args[0][2].startswith('https://S3_INTERNAL')
 
     assert response.status_code == 200
     result = response.json()['result']
@@ -139,7 +139,7 @@ async def test_upload_any_file_should_return_200(
             'resumable_total_size': 10,
         },
     )
-    # assert fake_providers_urlopen.call_args[0][2].startswith('https://MINIO_ENDPOINT')
+    # assert fake_providers_urlopen.call_args[0][2].startswith('https://S3_INTERNAL')
 
     assert response.status_code == 200
     result = response.json()['result']
