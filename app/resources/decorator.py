@@ -1,3 +1,4 @@
+# PILOT
 # Copyright (C) 2022 Indoc Research
 #
 # This program is free software: you can redistribute it and/or modify
@@ -37,9 +38,10 @@ def header_enforcement(required_headers: list):
             # loop over the header to enforce them
             for header in required_headers:
                 if not kwargs.get(header):
-                    raise HeaderMissingException("%s is required" % header)
+                    raise HeaderMissingException('%s is required' % header)
 
             return await func(*arg, **kwargs)
 
         return inner
+
     return decorator
