@@ -1,3 +1,4 @@
+# PILOT
 # Copyright (C) 2022 Indoc Research
 #
 # This program is free software: you can redistribute it and/or modify
@@ -68,6 +69,7 @@ class Settings(BaseSettings):
     REDIS_PASSWORD: str
 
     # Kafka info
+    # NOTE: KAFKA URL cannot start with http://
     KAFKA_URL: str
     KAFKA_ACTIVITY_TOPIC: str = 'metadata.items.activity'
 

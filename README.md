@@ -1,96 +1,62 @@
 # Upload Service
+
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg?style=for-the-badge)](https://www.gnu.org/licenses/agpl-3.0)
 [![Python 3.7](https://img.shields.io/badge/python-3.7-green?style=for-the-badge)](https://www.python.org/)
 [![GitHub Workflow Status (branch)](https://img.shields.io/github/workflow/status/pilotdataplatform/upload/CI/develop?style=for-the-badge)](https://github.com/PilotDataPlatform/upload/actions/workflows/cicd.yml)
 [![codecov](https://img.shields.io/codecov/c/github/PilotDataPlatform/upload?style=for-the-badge)](https://codecov.io/gh/PilotDataPlatform/upload)
 
-This service is built for file data uploading purpose. It's built using the FastAPI python framework.
-
-# About The Project
-
-The upload service is one of the component for PILOT project. The main responsibility is to handle the file upload(especially large file). The main machanism for uploading is to chunk up the large file(>2MB). It has three main api for pre-uploading, uploading chunks and combining the chunks. After combining the chunks, the api will upload the file to [Minio](https://min.io/) as the Object Storage.
-
-## Built With
-
- - [Minio](https://min.io/): The Object Storage to save the data
-
- - [Fastapi](https://fastapi.tiangolo.com): The async api framework for backend
-
- - [poetry](https://python-poetry.org/): python package management
-
- - [docker](https://docker.com)
+The upload service is one of the component for PILOT project. The main responsibility is to handle the file upload(especially large file). The main machanism for uploading is to chunk up the large file(>5MB). It has three main api for pre-uploading, uploading chunks and combining the chunks. After combining the chunks, the api will upload the file to [Minio](https://min.io/) as the Object Storage.
 
 # Getting Started
 
+This is an example of how to run the upload service locally.
 
-## Prerequisites
+### Prerequisites
 
- 1. The project is using poetry to handle the package. **Note here the poetry must install globally not in the anaconda virtual environment**
+This project is using [Poetry](https://python-poetry.org/docs/#installation) to handle the dependencies.
 
- ```
- pip install poetry
- ```
+    curl -sSL https://install.python-poetry.org | python3 -
 
- 2. add the precommit package:
+### Installation & Quick Start
 
- ```
- pip3 install pre_commit
- ```
+1. Clone the project.
 
-## Installation
+       git clone https://github.com/PilotDataPlatform/upload.git
 
- 1. git clone the project:
- ```
- git clone https://github.com/PilotDataPlatform/upload.git
- ```
+2. Install dependencies.
 
- 2. install the package:
- ```
- poetry install
- ```
+       poetry install
 
- 3. create the `.env` file from `.env.schema`
+3. Install any OS level dependencies if needed.
 
- 4. run it locally:
- ```
- poetry run python run.py
- ```
+       apt install <required_package>
+       brew install <required_package>
 
-## Docker
+5. Add environment variables into `.env` in case it's needed. Use `.env.schema` as a reference.
 
-To package up the service into docker pod, running following command:
+6. Run application.
 
-```
-docker build .
-```
+       poetry run python run.py
 
-## API Documents
+### Startup using Docker
 
-REST API documentation in the form of Swagger/OpenAPI can be found here: [Api Document](https://pilotdataplatform.github.io/api-docs/) 
+This project can also be started using [Docker](https://www.docker.com/get-started/).
 
-## Helm Charts
+1. To build and start the service within the Docker container, run:
 
-Components of the Pilot Platform are available as helm charts for installation on Kubernetes: [Upload Service Helm Charts](https://github.com/PilotDataPlatform/helm-charts/tree/main/upload-service)
+       docker compose up
 
+## Resources
 
-# Colaboration
+* [Pilot Platform API Documentation](https://pilotdataplatform.github.io/api-docs/)
+* [Pilot Platform Helm Charts](https://github.com/PilotDataPlatform/helm-charts/tree/main/upload-service)
 
-## Run tests
+## Contribution
 
-The test will require to start a test redis (without a password TESTONLY)
+You can contribute the project in following ways:
 
-```
-docker start test-redis || docker run --name test-redis -p 6379:6379 -d redis
-```
-
-To run pytest with coverage rum
-
-```
-make test
-```
-
-To run only pytest without coverage:
-
-```
-poetry run pytest
-```
+* Report a bug.
+* Suggest a feature.
+* Open a pull request for fixing issues or adding functionality. Please consider
+  using [pre-commit](https://pre-commit.com) in this case.
+* For general guidelines on how to contribute to the project, please take a look at the [contribution guides](CONTRIBUTING.md).
