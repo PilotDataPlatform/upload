@@ -68,6 +68,7 @@ class Settings(BaseSettings):
     REDIS_PASSWORD: str
 
     # Kafka info
+    # NOTE: KAFKA URL cannot start with http://
     KAFKA_URL: str
     KAFKA_ACTIVITY_TOPIC: str = 'metadata.items.activity'
 
