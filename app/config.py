@@ -38,7 +38,7 @@ def load_vault_settings(settings: BaseSettings) -> Dict[str, Any]:
 class Settings(BaseSettings):
     """Store service configuration settings."""
 
-    APP_NAME: str = 'UPLOAD_SERVICE'
+    APP_NAME: str = 'service_upload'
     VERSION: str = '0.2.3'
     port: int = 5079
     host: str = '127.0.0.1'
