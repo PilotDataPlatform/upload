@@ -15,10 +15,13 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import httpx
+from common import LoggerFactory
 
 from app.commons.data_providers.redis import SrvAioRedisSingleton
 from app.commons.kafka_producer import get_kafka_producer
 from app.config import ConfigClass
+
+logger = LoggerFactory('health_check_api').get_logger()
 
 
 async def check_redis() -> dict:
@@ -34,11 +37,14 @@ async def check_redis() -> dict:
     try:
         redis_client = SrvAioRedisSingleton()
         if await redis_client.ping():
-            return {'Redis': 'Online'}
+            logger.info('Redis is connected')
+            return True
         else:
-            return {'Redis': 'Fail'}
+            logger.error('Redis is not connected')
+            return False
     except Exception as e:
-        return {'Redis': 'Fail with error: %s' % (str(e))}
+        logger.error('Fail with error: %s' % (str(e)))
+        return False
 
 
 async def check_minio() -> bool:
@@ -60,11 +66,15 @@ async def check_minio() -> bool:
             res = await client.get(url)
 
             if res.status_code != 200:
-                return {'Minio': 'Cluster unavailable'}
-    except Exception as e:
-        return {'Minio': 'Fail with error: %s' % (str(e))}
+                logger.error('Cluster unavailable')
+                return False
 
-    return {'Minio': 'Online'}
+            logger.info('Minio is connected')
+    except Exception as e:
+        logger.error('Fail with error: %s' % (str(e)))
+        return False
+
+    return True
 
 
 async def check_kafka():
@@ -79,6 +89,8 @@ async def check_kafka():
 
     kafka_connection = await get_kafka_producer()
     if kafka_connection.connected is False:
-        return {'Kafka': 'Unavailable'}
+        logger.error('Kafka is not connected')
+        return False
 
-    return {'Kafka': 'Online'}
+    logger.info('Kafka is connected')
+    return True
